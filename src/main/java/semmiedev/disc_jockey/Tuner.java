@@ -291,7 +291,7 @@ public class Tuner {
             BlockState blockState = client.level.getBlockState(blockPos);
             int assumedNote = notePredictions.containsKey(blockPos) ? notePredictions.get(blockPos).getA() : blockState.getValue(BlockStateProperties.NOTE);
 
-            if (blockState.get(BlockStateProperties.NOTE)) {
+            if (blockState.hasProperty(BlockStateProperties.NOTE)) {
                 if(assumedNote == note.note() && blockState.getValue(BlockStateProperties.NOTE) == note.note())
                     fullyTunedBlocks++;
                 if (assumedNote != note.note()) {
@@ -363,7 +363,7 @@ public class Tuner {
             untunedNotes.remove(blockPos);
             int assumedNote = notePredictions.containsKey(blockPos) ? notePredictions.get(blockPos).getA() : client.level.getBlockState(blockPos).getValue(BlockStateProperties.NOTE);
             notePredictions.put(blockPos, new Tuple<>((assumedNote + 1) % 25, Util.now() + ping * 2 + 100));
-            client.get (client.player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(blockPos), Direction.UP, blockPos, false));
+            client.gameMode.useItemOn(client.player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(blockPos), Direction.UP, blockPos, false));
             lastInteractAt = Util.now();
             availableInteracts -= 1f;
             lastBlockPos = blockPos;
@@ -371,7 +371,7 @@ public class Tuner {
         if(lastBlockPos != null) {
             // Turn head into spinning with time and lookup up further the further tuning is progressed
             //client.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(((float) (System.currentTimeMillis() % 2000)) * (360f/2000f), (1 - roughTuneProgress) * 180 - 90, true));
-            client.player.swingHand(InteractionHand.MAIN_HAND);
+            client.player.swing(InteractionHand.MAIN_HAND);
         }
 
         return null;
