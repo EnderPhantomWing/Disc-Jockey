@@ -1,7 +1,7 @@
 package semmiedev.disc_jockey.gui;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.AbstractSelectionList.Entry;
+//import net.minecraft.client.gui.components.AbstractSelectionList.Entry;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.GuiGraphics;

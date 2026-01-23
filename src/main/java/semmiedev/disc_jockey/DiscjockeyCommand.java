@@ -37,7 +37,7 @@ public class DiscjockeyCommand {
                             FabricClientCommandSource source = context.getSource();
                             if (!isLoading(context)) {
                                 Minecraft client = source.getClient();
-                                client.send(() -> client.setScreen(new DiscJockeyScreen()));
+                                client.schedule(() -> client.setScreen(new DiscJockeyScreen()));
                                 return 1;
                             }
                             return 0;
@@ -45,7 +45,7 @@ public class DiscjockeyCommand {
                         .then(literal("reload")
                                 .executes(context -> {
                                     if (!isLoading(context)) {
-                                        context.getSource().sendFeedback(Text.translatable(Main.MOD_ID+".reloading"));
+                                        context.getSource().sendFeedback(Component.translatable(Main.MOD_ID+".reloading"));
                                         SongLoader.loadSongs();
                                         return 1;
                                     }
@@ -54,7 +54,7 @@ public class DiscjockeyCommand {
                         )
                         .then(literal("play")
                                 .then(argument("song", StringArgumentType.greedyString())
-                                        .suggests((context, builder) -> SharedSuggestionProvider.suggestMatching(SongLoader.SONG_SUGGESTIONS, builder))
+                                        .suggests((context, builder) -> SharedSuggestionProvider.suggest(SongLoader.SONG_SUGGESTIONS, builder))
                                         .executes(context -> {
                                             if (!isLoading(context)) {
                                                 String songName = StringArgumentType.getString(context, "song");
@@ -96,7 +96,7 @@ public class DiscjockeyCommand {
                         )
                         .then(literal("speed")
                                 .then(argument("speed", FloatArgumentType.floatArg(0.0001F, 15.0F))
-                                        .suggests((context, builder) -> SharedSuggestionProvider.suggestMatching(Arrays.asList("0.5", "0.75", "1", "1.25", "1.5", "2"), builder))
+                                        .suggests((context, builder) -> SharedSuggestionProvider.suggest(Arrays.asList("0.5", "0.75", "1", "1.25", "1.5", "2"), builder))
                                         .executes(context -> {
                                             Main.SONG_PLAYER.speed = FloatArgumentType.getFloat(context, "speed");
                                             context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".speed_changed", Main.SONG_PLAYER.speed));
@@ -130,9 +130,9 @@ public class DiscjockeyCommand {
                                 })
                                 .then(literal("map")
                                         .then(argument("originalInstrument", StringArgumentType.word())
-                                                .suggests((context, builder) -> SharedSuggestionProvider.suggestMatching(instrumentNamesAndAll, builder))
+                                                .suggests((context, builder) -> SharedSuggestionProvider.suggest(instrumentNamesAndAll, builder))
                                                 .then(argument("newInstrument", StringArgumentType.word())
-                                                        .suggests((context, builder) -> SharedSuggestionProvider.suggestMatching(instrumentNamesAndNothing, builder))
+                                                        .suggests((context, builder) -> SharedSuggestionProvider.suggest(instrumentNamesAndNothing, builder))
                                                         .executes(context -> {
                                                             String originalInstrumentStr = StringArgumentType.getString(context, "originalInstrument");
                                                             String newInstrumentStr = StringArgumentType.getString(context, "newInstrument");
@@ -176,7 +176,7 @@ public class DiscjockeyCommand {
                                 )
                                 .then(literal("unmap")
                                         .then(argument("instrument", StringArgumentType.word())
-                                                .suggests((context, builder) -> SharedSuggestionProvider.suggestMatching(instrumentNames, builder))
+                                                .suggests((context, builder) -> SharedSuggestionProvider.suggest(instrumentNames, builder))
                                                 .executes(context -> {
                                                     String instrumentStr = StringArgumentType.getString(context, "instrument");
 
