@@ -1,8 +1,8 @@
 package semmiedev.disc_jockey;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.enums.NoteBlockInstrument;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 
 import java.util.HashMap;
 

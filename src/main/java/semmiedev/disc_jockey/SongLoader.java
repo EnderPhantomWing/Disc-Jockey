@@ -1,8 +1,8 @@
 package semmiedev.disc_jockey;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.toast.SystemToast;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.toasts.SystemToast;
+import net.minecraft.network.chat.Component;
 import semmiedev.disc_jockey.gui.SongListWidget;
 
 import java.io.File;
@@ -37,7 +37,7 @@ public class SongLoader {
             for (Song song : SONGS) SONG_SUGGESTIONS.add(song.displayName);
             Main.config.favorites.removeIf(favorite -> SongLoader.SONGS.stream().map(song -> song.fileName).noneMatch(favorite::equals));
 
-            if (showToast && MinecraftClient.getInstance().textRenderer != null) SystemToast.add(MinecraftClient.getInstance().getToastManager(), SystemToast.Type.PACK_LOAD_FAILURE, Main.NAME, Text.translatable(Main.MOD_ID+".loading_done"));
+            if (showToast && Minecraft.getInstance().font != null) SystemToast.add(Minecraft.getInstance().getToastManager(), SystemToast.SystemToastId.PACK_LOAD_FAILURE, Main.NAME, Component.translatable(Main.MOD_ID+".loading_done"));
             showToast = true;
             loadingSongs = false;
         }).start();

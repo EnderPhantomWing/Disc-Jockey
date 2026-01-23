@@ -1,10 +1,10 @@
 package semmiedev.disc_jockey;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.phys.Vec3;
 
 public class Previewer implements ClientTickEvents.StartWorldTick {
     public boolean running;
@@ -20,19 +20,19 @@ public class Previewer implements ClientTickEvents.StartWorldTick {
     }
 
     public void stop() {
-        MinecraftClient.getInstance().send(() -> Main.TICK_LISTENERS.remove(this));
+        Minecraft.getInstance().schedule(() -> Main.TICK_LISTENERS.remove(this));
         running = false;
         i = 0;
         tick = 0;
     }
 
     @Override
-    public void onStartTick(ClientWorld world) {
+    public void onStartTick(ClientLevel world) {
         while (running) {
             long note = song.notes[i];
             if ((short)note == Math.round(tick)) {
-                Vec3d pos = MinecraftClient.getInstance().gameRenderer.getCamera().getCameraPos();
-                world.playSoundClient(pos.x, pos.y, pos.z, Note.INSTRUMENTS[(byte)(note >> Note.INSTRUMENT_SHIFT)].getSound().value(), SoundCategory.RECORDS, 3, (float)Math.pow(2.0, ((byte)(note >> Note.NOTE_SHIFT) - 12) / 12.0), false);
+                Vec3 pos = Minecraft.getInstance().gameRenderer.getMainCamera().position();
+                world.playLocalSound(pos.x, pos.y, pos.z, Note.INSTRUMENTS[(byte)(note >> Note.INSTRUMENT_SHIFT)].getSoundEvent().value(), SoundSource.RECORDS, 3, (float)Math.pow(2.0, ((byte)(note >> Note.NOTE_SHIFT) - 12) / 12.0), false);
                 i++;
                 if (i >= song.notes.length) {
                     stop();

@@ -1,13 +1,13 @@
 package semmiedev.disc_jockey.gui;
 
-import net.minecraft.client.gui.widget.SliderWidget;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.components.AbstractSliderButton;
+import net.minecraft.network.chat.Component;
 import semmiedev.disc_jockey.Main;
 
-public class SongTimeSliderWidget extends SliderWidget {
+public class SongTimeSliderWidget extends AbstractSliderButton {
 
     public SongTimeSliderWidget(int x, int y, int width, int height) {
-        super(x, y, width, height, Text.empty(), 0);
+        super(x, y, width, height, Component.empty(), 0);
     }
 
     private static String padZeroes(int number, int length) {
@@ -24,9 +24,9 @@ public class SongTimeSliderWidget extends SliderWidget {
     @Override
     protected void updateMessage() {
         if(Main.SONG_PLAYER.song == null)
-            setMessage(Text.empty());
+            setMessage(Component.empty());
         else
-            setMessage(Text.literal(formatTimestamp((int) Main.SONG_PLAYER.getSongElapsedSeconds()) + " / " + formatTimestamp((int) Main.SONG_PLAYER.song.getLengthInSeconds())));
+            setMessage(Component.literal(formatTimestamp((int) Main.SONG_PLAYER.getSongElapsedSeconds()) + " / " + formatTimestamp((int) Main.SONG_PLAYER.song.getLengthInSeconds())));
     }
 
     @Override

@@ -4,12 +4,12 @@
   "package": "semmiedev.disc_jockey.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "ClientWorldMixin"
+    "ClientLevelMixin"
   ],
   "injectors": {
     "defaultRequire": 1
   },
   "client": [
-    "EntryListWidgetAccessor"
+    "AbstractSelectionListAccessor"
   ]
 }

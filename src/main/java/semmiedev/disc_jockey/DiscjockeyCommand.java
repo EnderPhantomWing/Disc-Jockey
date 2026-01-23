@@ -1,3 +1,4 @@
+// TODO(Ravel): Failed to fully resolve file: null cannot be cast to non-null type com.intellij.psi.PsiJavaCodeReferenceElement
 package semmiedev.disc_jockey;
 
 import com.mojang.brigadier.CommandDispatcher;
@@ -5,10 +6,10 @@ import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.block.enums.NoteBlockInstrument;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.command.CommandSource;
-import net.minecraft.text.Text;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
+import net.minecraft.client.Minecraft;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 import semmiedev.disc_jockey.gui.screen.DiscJockeyScreen;
 
