@@ -146,7 +146,7 @@ public class DiscJockeyScreen extends Screen {
         songState = new TextWidget(10, 32, width / 2 - 20, 20, Text.empty(), getTextRenderer());
         addDrawableChild(songState);
         songTitle = new TextWidget(10, 32 + 20, width / 2 - 20, 20, Text.empty(), getTextRenderer());
-        //songTitle.alignLeft();
+        songTitle.alignLeft();
         addDrawableChild(songTitle);
         timeBar = new SongTimeSliderWidget(10, 32 + 20 + 20, width / 2 - 20, 30);
         addDrawableChild(timeBar);
@@ -222,20 +222,18 @@ public class DiscJockeyScreen extends Screen {
         if (shouldFilter) {
             shouldFilter = false;
             songListWidget.setScrollY(0);
-            java.util.List<SongListWidget.SongEntry> newEntries = new java.util.ArrayList<>();
+            songListWidget.children().clear();
             boolean empty = query.isEmpty();
             int favoriteIndex = 0;
             for (Song song : SongLoader.SONGS) {
                 if (empty || song.searchableFileName.contains(query) || song.searchableName.contains(query)) {
-                    song.entry.songListWidget = songListWidget;
                     if (song.entry.favorite) {
-                        newEntries.add(favoriteIndex++, song.entry);
+                        songListWidget.children().add(favoriteIndex++, song.entry);
                     } else {
-                        newEntries.add(song.entry);
+                        songListWidget.children().add(song.entry);
                     }
                 }
             }
-            songListWidget.safeReplaceEntries(newEntries);
         }
     }
 

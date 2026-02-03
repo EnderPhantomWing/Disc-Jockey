@@ -244,7 +244,7 @@ public class Tuner {
         int ping = 0;
         {
             PlayerListEntry playerListEntry;
-            if (client.getNetworkHandler() != null && (playerListEntry = client.getNetworkHandler().getPlayerListEntry(client.player.getGameProfile().id())) != null)
+            if (client.getNetworkHandler() != null && (playerListEntry = client.getNetworkHandler().getPlayerListEntry(client.player.getGameProfile().getId())) != null)
                 ping = playerListEntry.getLatency();
         }
         if(ping <= 0) {
