@@ -5,12 +5,9 @@
   "name": "Disc Jockey",
   "description": "Play note block songs in Minecraft",
   "authors": [
-    "SemmieDev"
-  ],
-  "contributors": [
+    "SemmieDev",
     "EnderKill98",
-    "myueqf",
-    "EnderPhantomWing"
+    "myueqf"
   ],
   "contact": {
     "repo": "https://github.com/SemmieDev/Disc-Jockey"
@@ -32,7 +29,7 @@
   ],
   "depends": {
     "fabric": "*",
-    "minecraft": "~1.21.11",
+    "minecraft": "~1.21.10",
     "cloth-config": "*"
   }
 }

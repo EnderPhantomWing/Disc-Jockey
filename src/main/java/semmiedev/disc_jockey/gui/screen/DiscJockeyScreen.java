@@ -150,7 +150,7 @@ public class DiscJockeyScreen extends Screen {
         addDrawableChild(songTitle);
         timeBar = new SongTimeSliderWidget(10, 32 + 20 + 20, width / 2 - 20, 30);
         addDrawableChild(timeBar);
-        playPauseButton = CyclingButtonWidget.<Boolean>builder((value) -> Text.literal(value ? "⏸" : "▶"), Main.SONG_PLAYER.running)
+        playPauseButton = CyclingButtonWidget.<Boolean>builder((value) -> Text.literal(value ? "⏸" : "▶"))
                 .omitKeyText()
                 .values(true, false)
                 .build((width / 4) - 25, 32 + 20 + 20 + 30 + 5, 20, 20, Text.empty(), (button, value) -> {
