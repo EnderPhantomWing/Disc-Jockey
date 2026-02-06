@@ -1,21 +1,5 @@
 package semmiedev.disc_jockey;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.NoteBlock;
-import net.minecraft.block.enums.NoteBlockInstrument;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Pair;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -23,12 +7,28 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.NoteBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 
 public class Tuner {
 
     private HashMap<NoteBlockInstrument, HashMap<Byte, BlockPos>> noteBlocks = null;
     private long tunedAfter = Util.TIMESTAMP_UNINITIALIZED;
-    private final HashMap<BlockPos, Pair<Integer, Long>> notePredictions = new HashMap<>();
+    private final HashMap<BlockPos, Tuple<Integer, Long>> notePredictions = new HashMap<>();
     private HashMap<Block, Integer> missingInstrumentBlocks = new HashMap<>();
     private long lastInteractAt = -1;
     private float availableInteracts = 8;
@@ -44,8 +44,8 @@ public class Tuner {
     public void cleanup() {
         // Clear outdated note predictions
         ArrayList<BlockPos> outdatedPredictions = new ArrayList<>();
-        for(Map.Entry<BlockPos, Pair<Integer, Long>> entry : notePredictions.entrySet()) {
-            if(entry.getValue().getRight() < Util.now())
+        for(Map.Entry<BlockPos, Tuple<Integer, Long>> entry : notePredictions.entrySet()) {
+            if(entry.getValue().getB() < Util.now())
                 outdatedPredictions.add(entry.getKey());
         }
         for(BlockPos outdatedPrediction : outdatedPredictions) notePredictions.remove(outdatedPrediction);
@@ -80,26 +80,26 @@ public class Tuner {
         availableInteracts = 0;
     }
 
-    public boolean selectSong(MinecraftClient client, Song song) {
+    public boolean selectSong(Minecraft client, Song song) {
         reset();
 
-        final ClientPlayerEntity player = client.player;
-        final ClientWorld world = client.world;
+        final LocalPlayer player = client.player;
+        final ClientLevel world = client.level;
         if(player == null || world == null || song == null) return false;
 
         // Create list of available noteblock positions per used instrument
         HashMap<NoteBlockInstrument, ArrayList<BlockPos>> noteblocksForInstrument = new HashMap<>();
         for(NoteBlockInstrument instrument : NoteBlockInstrument.values())
             noteblocksForInstrument.put(instrument, new ArrayList<>());
-        final Vec3d playerEyePos = player.getEyePos();
+        final Vec3 playerEyePos = player.getEyePosition();
 
         final int maxOffset; // Rough estimates, of which blocks could be in reach
         if(Main.config.expectedServerVersion == Config.ExpectedServerVersion.v1_20_4_Or_Earlier) {
             maxOffset = 7;
         }else if(Main.config.expectedServerVersion == Config.ExpectedServerVersion.v1_20_5_Or_Later) {
-            maxOffset = (int) Math.ceil(player.getBlockInteractionRange() + 1.0 + 1.0);
+            maxOffset = (int) Math.ceil(player.blockInteractionRange() + 1.0 + 1.0);
         }else if(Main.config.expectedServerVersion == Config.ExpectedServerVersion.All) {
-            maxOffset = Math.min(7, (int) Math.ceil(player.getBlockInteractionRange() + 1.0 + 1.0));
+            maxOffset = Math.min(7, (int) Math.ceil(player.blockInteractionRange() + 1.0 + 1.0));
         }else {
             throw new NotImplementedException("ExpectedServerVersion Value not implemented: " + Main.config.expectedServerVersion.name());
         }
@@ -113,8 +113,8 @@ public class Tuner {
             for (int y : orderedOffsets) {
                 for (int x : orderedOffsets) {
                     for (int z : orderedOffsets) {
-                        Vec3d vec3d = playerEyePos.add(x, y, z);
-                        BlockPos blockPos = new BlockPos(MathHelper.floor(vec3d.x), MathHelper.floor(vec3d.y), MathHelper.floor(vec3d.z));
+                        Vec3 vec3d = playerEyePos.add(x, y, z);
+                        BlockPos blockPos = new BlockPos(Mth.floor(vec3d.x), Mth.floor(vec3d.y), Mth.floor(vec3d.z));
                         if (!Util.canInteractWith(player, blockPos))
                             continue;
                         BlockState blockState = world.getBlockState(blockPos);
@@ -159,7 +159,7 @@ public class Tuner {
             int bestBlockTuningSteps = Integer.MAX_VALUE;
             for(BlockPos blockPos : availableBlocks) {
                 int wantedNote = note.note();
-                int currentNote = client.world.getBlockState(blockPos).get(Properties.NOTE);
+                int currentNote = client.level.getBlockState(blockPos).getValue(BlockStateProperties.NOTE);
                 int tuningSteps = wantedNote >= currentNote ? wantedNote - currentNote : (25 - currentNote) + wantedNote;
 
                 if(tuningSteps < bestBlockTuningSteps) {
@@ -198,25 +198,25 @@ public class Tuner {
         }
     }
 
-    private @Nullable NoteBlockInstrument getInstrument(MinecraftClient client, BlockPos pos, BlockState state) {
+    private @Nullable NoteBlockInstrument getInstrument(Minecraft client, BlockPos pos, BlockState state) {
         if(!(state.getBlock() instanceof NoteBlock noteBlock)) return null; // Not a noteblock
 
         if(!Main.config.instrumentDetectionWorkaround) {
-            NoteBlockInstrument instrument = state.get(Properties.INSTRUMENT);
-            if(!instrument.isNotBaseBlock() /*Instrument block is below*/ && !client.world.isAir(pos.up())) return null; // Blocked off from playing
+            NoteBlockInstrument instrument = state.getValue(BlockStateProperties.NOTEBLOCK_INSTRUMENT);
+            if(!instrument.worksAboveNoteBlock() /*Instrument block is below*/ && !client.level.isEmptyBlock(pos.above())) return null; // Blocked off from playing
             return instrument;
         }
 
         // Workaround for instrument detection:
 
         // Pretty much NoteBlock.getStateWithInstrument, but ignoring blockstates and using default instead:
-        NoteBlockInstrument aboveBlockInstrument = client.world.getBlockState(pos.up()).getBlock().getDefaultState().getInstrument();
-        if (aboveBlockInstrument.isNotBaseBlock()) {
+        NoteBlockInstrument aboveBlockInstrument = client.level.getBlockState(pos.above()).getBlock().defaultBlockState().instrument();
+        if (aboveBlockInstrument.worksAboveNoteBlock()) {
             return aboveBlockInstrument;
         } else {
-            NoteBlockInstrument belowBlockInstrument = client.world.getBlockState(pos.down()).getBlock().getDefaultState().getInstrument();
-            if(belowBlockInstrument.isNotBaseBlock()) return NoteBlockInstrument.HARP;
-            if(!client.world.isAir(pos.up())) return null; // Noteblock can't be played
+            NoteBlockInstrument belowBlockInstrument = client.level.getBlockState(pos.below()).getBlock().defaultBlockState().instrument();
+            if(belowBlockInstrument.worksAboveNoteBlock()) return NoteBlockInstrument.HARP;
+            if(!client.level.isEmptyBlock(pos.above())) return null; // Noteblock can't be played
             return belowBlockInstrument;
         }
     }
@@ -240,11 +240,11 @@ public class Tuner {
         Unexpected,
     }
 
-    private int getOwnPing(MinecraftClient client) {
+    private int getOwnPing(Minecraft client) {
         int ping = 0;
         {
-            PlayerListEntry playerListEntry;
-            if (client.getNetworkHandler() != null && (playerListEntry = client.getNetworkHandler().getPlayerListEntry(client.player.getGameProfile().id())) != null)
+            PlayerInfo playerListEntry;
+            if (client.getConnection() != null && (playerListEntry = client.getConnection().getPlayerInfo(client.player.getGameProfile().id())) != null)
                 ping = playerListEntry.getLatency();
         }
         if(ping <= 0) {
@@ -254,10 +254,10 @@ public class Tuner {
         return ping;
     }
 
-    public @Nullable TuningFail tickTuning(MinecraftClient client) {
+    public @Nullable TuningFail tickTuning(Minecraft client) {
         if(tunedAfter != Util.TIMESTAMP_UNINITIALIZED) return null; // Nothing to do. May need to wait a bit after tuning to be considered done (see isTuned()).
 
-        if(client.player == null || client.world == null) return TuningFail.NotIngame;
+        if(client.player == null || client.level == null) return TuningFail.NotIngame;
         if(!isSongSelected()) return TuningFail.NoSongSelected;
         int ping = getOwnPing(client);
 
@@ -287,16 +287,16 @@ public class Tuner {
                 continue;
             BlockPos blockPos = noteBlocks.get(note.instrument()).get(note.note());
             if(blockPos == null) continue;
-            BlockState blockState = client.world.getBlockState(blockPos);
-            int assumedNote = notePredictions.containsKey(blockPos) ? notePredictions.get(blockPos).getLeft() : blockState.get(Properties.NOTE);
+            BlockState blockState = client.level.getBlockState(blockPos);
+            int assumedNote = notePredictions.containsKey(blockPos) ? notePredictions.get(blockPos).getA() : blockState.getValue(BlockStateProperties.NOTE);
 
-            if (blockState.contains(Properties.NOTE)) {
-                if(assumedNote == note.note() && blockState.get(Properties.NOTE) == note.note())
+            if (blockState.hasProperty(BlockStateProperties.NOTE)) {
+                if(assumedNote == note.note() && blockState.getValue(BlockStateProperties.NOTE) == note.note())
                     fullyTunedBlocks++;
                 if (assumedNote != note.note()) {
                     if (!Util.canInteractWith(client.player, blockPos))
                         return TuningFail.MovedTooFarAway;
-                    untunedNotes.put(blockPos, blockState.get(Properties.NOTE));
+                    untunedNotes.put(blockPos, blockState.getValue(BlockStateProperties.NOTE));
                 }
             } else {
                 noteBlocks = null;
@@ -360,9 +360,9 @@ public class Tuner {
 
             lastTunedNote = untunedNotes.get(blockPos);
             untunedNotes.remove(blockPos);
-            int assumedNote = notePredictions.containsKey(blockPos) ? notePredictions.get(blockPos).getLeft() : client.world.getBlockState(blockPos).get(Properties.NOTE);
-            notePredictions.put(blockPos, new Pair<>((assumedNote + 1) % 25, Util.now() + ping * 2 + 100));
-            client.interactionManager.interactBlock(client.player, Hand.MAIN_HAND, new BlockHitResult(Vec3d.ofCenter(blockPos), Direction.UP, blockPos, false));
+            int assumedNote = notePredictions.containsKey(blockPos) ? notePredictions.get(blockPos).getA() : client.level.getBlockState(blockPos).getValue(BlockStateProperties.NOTE);
+            notePredictions.put(blockPos, new Tuple<>((assumedNote + 1) % 25, Util.now() + ping * 2 + 100));
+            client.gameMode.useItemOn(client.player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(blockPos), Direction.UP, blockPos, false));
             lastInteractAt = Util.now();
             availableInteracts -= 1f;
             lastBlockPos = blockPos;
@@ -370,7 +370,7 @@ public class Tuner {
         if(lastBlockPos != null) {
             // Turn head into spinning with time and lookup up further the further tuning is progressed
             //client.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(((float) (System.currentTimeMillis() % 2000)) * (360f/2000f), (1 - roughTuneProgress) * 180 - 90, true));
-            client.player.swingHand(Hand.MAIN_HAND);
+            client.player.swing(InteractionHand.MAIN_HAND);
         }
 
         return null;

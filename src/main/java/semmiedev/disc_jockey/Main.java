@@ -10,25 +10,24 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientLoginConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.glfw.GLFW;
 import semmiedev.disc_jockey.gui.hud.BlocksOverlay;
 import semmiedev.disc_jockey.gui.screen.DiscJockeyScreen;
-
+import com.mojang.blaze3d.platform.InputConstants;
 import java.io.File;
 import java.util.ArrayList;
 
 public class Main implements ClientModInitializer {
     public static final String MOD_ID = "disc_jockey";
-    public static final MutableText NAME = Text.literal("Disc Jockey");
+    public static final MutableComponent NAME = Component.literal("Disc Jockey");
     public static final Logger LOGGER = LogManager.getLogger("Disc Jockey");
     public static final ArrayList<ClientTickEvents.StartWorldTick> TICK_LISTENERS = new ArrayList<>();
     public static final Previewer PREVIEWER = new Previewer();
@@ -50,27 +49,27 @@ public class Main implements ClientModInitializer {
 
         //KeyBinding openScreenKeyBind = KeyBindingHelper.registerKeyBinding(new KeyBinding(MOD_ID+".key_bind.open_screen", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_J, "key.category."+MOD_ID));
         // 修复按键绑定
-        KeyBinding openScreenKeyBind = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+        KeyMapping openScreenKeyBind = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 MOD_ID + ".key_bind.open_screen",
-                InputUtil.Type.KEYSYM,
+                InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_J,
-                KeyBinding.Category.MISC
+                KeyMapping.Category.MISC
         ));
 
         ClientTickEvents.START_CLIENT_TICK.register(new ClientTickEvents.StartTick() {
-            private ClientWorld prevWorld;
+            private ClientLevel prevWorld;
 
             @Override
-            public void onStartTick(MinecraftClient client) {
-                if (prevWorld != client.world) {
+            public void onStartTick(Minecraft client) {
+                if (prevWorld != client.level) {
                     PREVIEWER.stop();
                     SONG_PLAYER.stop();
                 }
-                prevWorld = client.world;
+                prevWorld = client.level;
 
-                if (openScreenKeyBind.wasPressed()) {
+                if (openScreenKeyBind.consumeClick()) {
                     if (SongLoader.loadingSongs) {
-                        client.inGameHud.getChatHud().addMessage(Text.translatable(Main.MOD_ID+".still_loading").formatted(Formatting.RED));
+                        client.gui.getChat().addMessage(Component.translatable(Main.MOD_ID+".still_loading").withStyle(ChatFormatting.RED));
                         SongLoader.showToast = true;
                     } else {
                         client.setScreen(new DiscJockeyScreen());
