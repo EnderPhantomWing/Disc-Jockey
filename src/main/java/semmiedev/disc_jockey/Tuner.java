@@ -1,22 +1,5 @@
-// TODO(Ravel): Failed to fully resolve file: null cannot be cast to non-null type com.intellij.psi.PsiJavaCodeReferenceElement
 package semmiedev.disc_jockey;
 
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.NoteBlock;
-import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.multiplayer.PlayerInfo;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.util.Tuple;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.util.Mth;
-import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -24,6 +7,22 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.NoteBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 
 public class Tuner {
 
@@ -98,9 +97,9 @@ public class Tuner {
         if(Main.config.expectedServerVersion == Config.ExpectedServerVersion.v1_20_4_Or_Earlier) {
             maxOffset = 7;
         }else if(Main.config.expectedServerVersion == Config.ExpectedServerVersion.v1_20_5_Or_Later) {
-            maxOffset = (int) Math.ceil(player.getSecondsToDisableBlocking() + 1.0 + 1.0);
+            maxOffset = (int) Math.ceil(player.blockInteractionRange() + 1.0 + 1.0);
         }else if(Main.config.expectedServerVersion == Config.ExpectedServerVersion.All) {
-            maxOffset = Math.min(7, (int) Math.ceil(player.getSecondsToDisableBlocking() + 1.0 + 1.0));
+            maxOffset = Math.min(7, (int) Math.ceil(player.blockInteractionRange() + 1.0 + 1.0));
         }else {
             throw new NotImplementedException("ExpectedServerVersion Value not implemented: " + Main.config.expectedServerVersion.name());
         }
@@ -204,7 +203,7 @@ public class Tuner {
 
         if(!Main.config.instrumentDetectionWorkaround) {
             NoteBlockInstrument instrument = state.getValue(BlockStateProperties.NOTEBLOCK_INSTRUMENT);
-            if(!instrument.isTunable() /*.isNotBaseBlock()*/ /*Instrument block is below*/ && !client.level.isEmptyBlock(pos.above())) return null; // Blocked off from playing
+            if(!instrument.worksAboveNoteBlock() /*Instrument block is below*/ && !client.level.isEmptyBlock(pos.above())) return null; // Blocked off from playing
             return instrument;
         }
 
@@ -212,11 +211,11 @@ public class Tuner {
 
         // Pretty much NoteBlock.getStateWithInstrument, but ignoring blockstates and using default instead:
         NoteBlockInstrument aboveBlockInstrument = client.level.getBlockState(pos.above()).getBlock().defaultBlockState().instrument();
-        if (aboveBlockInstrument.isTunable()) {
+        if (aboveBlockInstrument.worksAboveNoteBlock()) {
             return aboveBlockInstrument;
         } else {
             NoteBlockInstrument belowBlockInstrument = client.level.getBlockState(pos.below()).getBlock().defaultBlockState().instrument();
-            if(belowBlockInstrument.isTunable()) return NoteBlockInstrument.HARP;
+            if(belowBlockInstrument.worksAboveNoteBlock()) return NoteBlockInstrument.HARP;
             if(!client.level.isEmptyBlock(pos.above())) return null; // Noteblock can't be played
             return belowBlockInstrument;
         }

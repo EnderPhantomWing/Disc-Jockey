@@ -1,19 +1,18 @@
 package semmiedev.disc_jockey.gui;
 
 import net.minecraft.client.Minecraft;
-//import net.minecraft.client.gui.components.AbstractSelectionList.Entry;
-import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.components.AbstractSelectionList;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 import semmiedev.disc_jockey.Main;
 import semmiedev.disc_jockey.Song;
 import semmiedev.disc_jockey.Util;
-import semmiedev.disc_jockey.mixin.AbstractSelectionListAccessor;
+import semmiedev.disc_jockey.mixin.EntryListWidgetAccessor;
 
 public class SongListWidget extends AbstractSelectionList<SongListWidget.SongEntry> {
 
@@ -30,7 +29,7 @@ public class SongListWidget extends AbstractSelectionList<SongListWidget.SongEnt
     }
 
     public java.util.List<SongListWidget.SongEntry> getModifiableChildren() {
-        return (java.util.List<SongListWidget.SongEntry>) ((AbstractSelectionListAccessor) this).getChildrenList();
+        return (java.util.List<SongListWidget.SongEntry>) ((EntryListWidgetAccessor) this).getChildrenList();
     }
 
     public int getItemHeight() {

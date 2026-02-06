@@ -1,13 +1,13 @@
 package semmiedev.disc_jockey.gui.hud;
 
-import net.minecraft.world.level.block.Blocks;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.util.ARGB;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
 
 public class BlocksOverlay {
     public static ItemStack[] itemStacks;
