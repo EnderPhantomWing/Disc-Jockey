@@ -39,18 +39,18 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
     }
 
     public synchronized void startPlaybackThread() {
-        if(Main.config.disableAsyncPlayback) {
+        if (Main.config.disableAsyncPlayback) {
             playbackThread = null;
             return;
         }
 
         this.playbackThread = new Thread(() -> {
             Thread ownThread = this.playbackThread;
-            while(ownThread == this.playbackThread) {
+            while (ownThread == this.playbackThread) {
                 try {
                     // Accuracy doesn't really matter at this precision imo
                     Thread.sleep(playbackLoopDelay);
-                }catch (InterruptedException ignored) {}
+                } catch (InterruptedException ignored) {}
                 tickPlayback();
             }
         });
@@ -72,7 +72,7 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
         index = 0;
         this.song = song;
         //Main.LOGGER.info("Song length: " + song.length + " and tempo " + song.tempo);
-        if(this.playbackThread == null) startPlaybackThread();
+        if (this.playbackThread == null) startPlaybackThread();
         running = true;
         rateLimiter.reset();
         tuner.reset();
@@ -128,20 +128,20 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
                     return;
                 }
                 Vec3 unit = Vec3.upFromBottomCenterOf(blockPos, 0.5).subtract(client.player.getEyePosition()).normalize();
-                if(rateLimiter.canSendLookPacket()) {
+                if (rateLimiter.canSendLookPacket()) {
                     client.getConnection().send(new ServerboundMovePlayerPacket.Rot(Mth.wrapDegrees((float) (Mth.atan2(unit.z, unit.x) * 57.2957763671875) - 90.0f), Mth.wrapDegrees((float) (-(Mth.atan2(unit.y, Math.sqrt(unit.x * unit.x + unit.z * unit.z)) * 57.2957763671875))), client.player.onGround(), client.player.horizontalCollision));                        rateLimiter.onLookPacketSent();
                     rateLimiter.onLookPacketSent();
                 }
-                if(rateLimiter.canSendAnyPacket()) {
+                if (rateLimiter.canSendAnyPacket()) {
                     // TODO: 5/30/2022 Check if the block needs tuning
                     client.player.connection.send(new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, blockPos, Direction.UP, 0));
                     rateLimiter.onPacketSent();
                 }
-                if(rateLimiter.canSendCosmeticPacket()) {
+                if (rateLimiter.canSendCosmeticPacket()) {
                     client.player.connection.send(new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK, blockPos, Direction.UP, 0));
                     rateLimiter.onPacketSent();
                 }
-                if(rateLimiter.canSendSwingPacket()) {
+                if (rateLimiter.canSendSwingPacket()) {
                     client.executeIfPossible(() -> client.player.swing(InteractionHand.MAIN_HAND));
                     rateLimiter.onSwingPacketSent();
                 }
@@ -150,7 +150,7 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
                 if (index >= song.notes.length) {
                     stop();
                     didSongReachEnd = true;
-                    if(loopSong) {
+                    if (loopSong) {
                         start(song);
                     }
                     break;
@@ -160,7 +160,7 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
             }
         }
 
-        if(running) { // Might not be running anymore (prevent small offset on song, even if that is not played anymore)
+        if (running) { // Might not be running anymore (prevent small offset on song, even if that is not played anymore)
             long elapsedMs = previousPlaybackTickAt != -1L && lastPlaybackTickAt != -1L ? lastPlaybackTickAt - previousPlaybackTickAt : 16; // Assume 16ms if unknown
             tick += song.millisecondsToTicks(elapsedMs) * speed;
         }
@@ -169,27 +169,27 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
     @Override
     public void onStartTick(ClientLevel world) {
         Minecraft client = Minecraft.getInstance();
-        if(world == null || client.level == null || client.player == null) return;
-        if(song == null || !running) return;
+        if (world == null || client.level == null || client.player == null) return;
+        if (song == null || !running) return;
 
         tuner.cleanup(); // Housekeeping
 
         // Select song
         if (!tuner.isSongSelected()) {
             if (!tuner.selectSong(client, song)) {
-                if(!tuner.getMissingInstrumentBlocks().isEmpty()) {
+                if (!tuner.getMissingInstrumentBlocks().isEmpty()) {
                     ChatComponent chatHud = Minecraft.getInstance().gui.getChat();
                     chatHud.addMessage(Component.translatable(Main.MOD_ID + ".player.invalid_note_blocks").withStyle(ChatFormatting.RED));
                     tuner.getMissingInstrumentBlocks().forEach((block, integer) -> chatHud.addMessage(Component.literal(block.getName().getString() + " × " + integer).withStyle(ChatFormatting.RED)));
                     stop();
                     return;
-                }else {
+                } else {
                     Main.LOGGER.error("Failed to select song to unknown / unexpected reason!");
                     client.gui.getChat().addMessage(Component.translatable(Main.MOD_ID + ".selectsong_fail_unknown").withStyle(ChatFormatting.RED));
                     stop();
                     return;
                 }
-            }else {
+            } else {
                 Main.LOGGER.info("Selected song: " + song.displayName + " (" + song.fileName + ")");
             }
         }
@@ -201,7 +201,7 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
                 stop();
                 client.gui.getChat().addMessage(Component.translatable(Main.MOD_ID + ".player.too_far").withStyle(ChatFormatting.RED));
                 return;
-            } else if(tuningFail != null) {
+            } else if (tuningFail != null) {
                 stop();
                 Main.LOGGER.error("Tuning song failed: " + tuningFail.name());
                 client.gui.getChat().addMessage(Component.translatable(Main.MOD_ID + ".player.tuning_fail_other", tuningFail.name()).withStyle(ChatFormatting.RED));
@@ -209,11 +209,11 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
             }
         }
 
-        if(tuner.isTuned() && (playbackThread == null || !playbackThread.isAlive()) && running && Main.config.disableAsyncPlayback) {
+        if (tuner.isTuned() && (playbackThread == null || !playbackThread.isAlive()) && running && Main.config.disableAsyncPlayback) {
             // Sync playback (off by default). Replacement for playback thread
             try {
                 tickPlayback();
-            }catch (Exception ex) {
+            } catch (Exception ex) {
                 Main.LOGGER.error("Failed to tick playback synchronously!", ex);
                 stop();
             }
@@ -223,9 +223,9 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
     public void setSongElapsedSeconds(double seconds) {
         tick = song.millisecondsToTicks((long) seconds * 1000);
         index = 0;
-        for(int i = 0; i < song.notes.length; i++) {
+        for (int i = 0; i < song.notes.length; i++) {
             long note = song.notes[i];
-            if((short) note >= Math.round(tick)) {
+            if ((short) note >= Math.round(tick)) {
                 index = i;
                 //Main.LOGGER.info("Seconds: " + seconds + ", Tick: " + tick + ", Index: " + index);
                 break;
@@ -234,7 +234,7 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
     }
 
     public double getSongElapsedSeconds() {
-        if(song == null) return 0;
+        if (song == null) return 0;
         return song.ticksToMilliseconds(tick) / 1000;
     }
 }

@@ -37,10 +37,10 @@ public class RateLimiter {
      */
     public void tick() {
         final long now = Util.now();
-        if(last100MsSpanAt != Util.TIMESTAMP_UNINITIALIZED && now - last100MsSpanAt >= 100) {
+        if (last100MsSpanAt != Util.TIMESTAMP_UNINITIALIZED && now - last100MsSpanAt >= 100) {
             last100MsSpanEstimatedPackets = 0;
             last100MsSpanAt = now;
-        }else if (last100MsSpanAt == Util.TIMESTAMP_UNINITIALIZED) {
+        } else if (last100MsSpanAt == Util.TIMESTAMP_UNINITIALIZED) {
             last100MsSpanAt = now;
             last100MsSpanEstimatedPackets = 0;
         }
@@ -62,10 +62,10 @@ public class RateLimiter {
     }
 
     public void checkLimits() {
-        if(last100MsSpanEstimatedPackets >= getMaxCosmeticPacketsPer100ms()) {
+        if (last100MsSpanEstimatedPackets >= getMaxCosmeticPacketsPer100ms()) {
             reducePacketsUntil = Math.max(reducePacketsUntil, Util.now() + 500);
         }
-        if(last100MsSpanEstimatedPackets >= getMaxPacketsPer100ms()) {
+        if (last100MsSpanEstimatedPackets >= getMaxPacketsPer100ms()) {
             Main.LOGGER.warn("Stopping all packets for a bit!");
             final long now = Util.now();
             stopPacketsUntil = Math.max(stopPacketsUntil, now + 250);

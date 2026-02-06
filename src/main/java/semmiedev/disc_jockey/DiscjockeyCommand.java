@@ -72,7 +72,7 @@ public class DiscjockeyCommand {
                         .then(literal("random")
                                 .executes(context -> {
                                     if (isLoading(context)) return 0;
-                                    if(SongLoader.SONGS.isEmpty()) {
+                                    if (SongLoader.SONGS.isEmpty()) {
                                         context.getSource().sendError(Component.translatable(Main.MOD_ID + ".no_songs"));
                                         return 0;
                                     }
@@ -113,10 +113,10 @@ public class DiscjockeyCommand {
                                     if (!Main.SONG_PLAYER.tuner.isTuned()) {
                                         context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".info_tuning", Main.SONG_PLAYER.song.displayName, Main.SONG_PLAYER.speed));
                                         return 0;
-                                    }else if(!Main.SONG_PLAYER.didSongReachEnd) {
+                                    } else if(!Main.SONG_PLAYER.didSongReachEnd) {
                                         context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".info_playing", formatTimestamp((int) Main.SONG_PLAYER.getSongElapsedSeconds()), formatTimestamp((int) Main.SONG_PLAYER.song.getLengthInSeconds()), Main.SONG_PLAYER.song.displayName, Main.SONG_PLAYER.speed));
                                         return 0;
-                                    }else {
+                                    } else {
                                         context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".info_finished", Main.SONG_PLAYER.song != null ? Main.SONG_PLAYER.song.displayName : "???", Main.SONG_PLAYER.speed));
                                         return 0;
                                     }
@@ -137,20 +137,20 @@ public class DiscjockeyCommand {
                                                             String newInstrumentStr = StringArgumentType.getString(context, "newInstrument");
                                                             @Nullable NoteBlockInstrument originalInstrument = null, newInstrument = null;
                                                             for(NoteBlockInstrument maybeInstrument : NoteBlockInstrument.values()) {
-                                                                if(maybeInstrument.toString().equalsIgnoreCase(originalInstrumentStr)) {
+                                                                if (maybeInstrument.toString().equalsIgnoreCase(originalInstrumentStr)) {
                                                                     originalInstrument = maybeInstrument;
                                                                 }
-                                                                if(maybeInstrument.toString().equalsIgnoreCase(newInstrumentStr)) {
+                                                                if (maybeInstrument.toString().equalsIgnoreCase(newInstrumentStr)) {
                                                                     newInstrument = maybeInstrument;
                                                                 }
                                                             }
 
-                                                            if(originalInstrument == null && !originalInstrumentStr.equalsIgnoreCase("all")) {
+                                                            if (originalInstrument == null && !originalInstrumentStr.equalsIgnoreCase("all")) {
                                                                 context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".invalid_instrument", originalInstrumentStr));
                                                                 return 0;
                                                             }
 
-                                                            if(newInstrument == null && !newInstrumentStr.equalsIgnoreCase("nothing")) {
+                                                            if (newInstrument == null && !newInstrumentStr.equalsIgnoreCase("nothing")) {
                                                                 context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".invalid_instrument", newInstrumentStr));
                                                                 return 0;
                                                             }
@@ -158,13 +158,13 @@ public class DiscjockeyCommand {
                                                             // (originalInstrument == null) means: all instruments
                                                             // (newInstrument == null) means: nothing (represented by null in hashmap, so no special handling below)
 
-                                                            if(originalInstrument == null) {
+                                                            if (originalInstrument == null) {
                                                                 // All instruments
                                                                 for(NoteBlockInstrument instrument : NoteBlockInstrument.values()) {
                                                                     Main.SONG_PLAYER.tuner.instrumentMap.put(instrument, newInstrument);
                                                                 }
                                                                 context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".instrument_mapped_all", newInstrumentStr.toLowerCase()));
-                                                            }else {
+                                                            } else {
                                                                 Main.SONG_PLAYER.tuner.instrumentMap.put(originalInstrument, newInstrument);
                                                                 context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".instrument_mapped", originalInstrumentStr.toLowerCase(), newInstrumentStr.toLowerCase()));
                                                             }
@@ -180,14 +180,14 @@ public class DiscjockeyCommand {
                                                     String instrumentStr = StringArgumentType.getString(context, "instrument");
 
                                                     NoteBlockInstrument instrument = null;
-                                                    for(NoteBlockInstrument maybeInstrument : NoteBlockInstrument.values()) {
-                                                        if(maybeInstrument.toString().equalsIgnoreCase(instrumentStr)) {
+                                                    for (NoteBlockInstrument maybeInstrument : NoteBlockInstrument.values()) {
+                                                        if (maybeInstrument.toString().equalsIgnoreCase(instrumentStr)) {
                                                             instrument = maybeInstrument;
                                                             break;
                                                         }
                                                     }
 
-                                                    if(instrument == null) {
+                                                    if (instrument == null) {
                                                         context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".invalid_instrument", instrumentStr));
                                                         return 0;
                                                     }
@@ -200,14 +200,14 @@ public class DiscjockeyCommand {
                                 )
                                 .then(literal("show")
                                         .executes(context -> {
-                                            if(Main.SONG_PLAYER.tuner.instrumentMap.isEmpty()) {
+                                            if (Main.SONG_PLAYER.tuner.instrumentMap.isEmpty()) {
                                                 context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".no_mapped_instruments"));
                                                 return 1;
                                             }
 
                                             StringBuilder maps = new StringBuilder();
-                                            for(Map.Entry<NoteBlockInstrument, NoteBlockInstrument> entry : Main.SONG_PLAYER.tuner.instrumentMap.entrySet()) {
-                                                if(!maps.isEmpty()) maps.append(", ");
+                                            for (Map.Entry<NoteBlockInstrument, NoteBlockInstrument> entry : Main.SONG_PLAYER.tuner.instrumentMap.entrySet()) {
+                                                if (!maps.isEmpty()) maps.append(", ");
                                                 maps
                                                         .append(entry.getKey().toString().toLowerCase())
                                                         .append("->")
@@ -258,7 +258,7 @@ public class DiscjockeyCommand {
 
     private static String padZeroes(int number, int length) {
         StringBuilder builder = new StringBuilder("" + number);
-        while(builder.length() < length)
+        while (builder.length() < length)
             builder.insert(0, '0');
         return builder.toString();
     }

@@ -12,9 +12,9 @@ public class SongTimeSliderWidget extends AbstractSliderButton {
 
     private static String padZeroes(int number, int length) {
         StringBuilder builder = new StringBuilder("" + number);
-        while(builder.length() < length)
+        while (builder.length() < length) {
             builder.insert(0, '0');
-        return builder.toString();
+        } return builder.toString();
     }
 
     private static String formatTimestamp(int seconds) {
@@ -23,10 +23,11 @@ public class SongTimeSliderWidget extends AbstractSliderButton {
 
     @Override
     protected void updateMessage() {
-        if(Main.SONG_PLAYER.song == null)
+        if (Main.SONG_PLAYER.song == null) {
             setMessage(Component.empty());
-        else
+        } else {
             setMessage(Component.literal(formatTimestamp((int) Main.SONG_PLAYER.getSongElapsedSeconds()) + " / " + formatTimestamp((int) Main.SONG_PLAYER.song.getLengthInSeconds())));
+        }
     }
 
     @Override
@@ -38,7 +39,7 @@ public class SongTimeSliderWidget extends AbstractSliderButton {
     }
 
     public void update() {
-        if(Main.SONG_PLAYER.song == null) return;
+        if (Main.SONG_PLAYER.song == null) return;
         double elapsed = Main.SONG_PLAYER.getSongElapsedSeconds();
         double total = Main.SONG_PLAYER.song == null ? 1 : Main.SONG_PLAYER.song.getLengthInSeconds();
         value = elapsed / total;

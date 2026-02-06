@@ -28,6 +28,7 @@ public class SongListWidget extends AbstractSelectionList<SongListWidget.SongEnt
         this.replaceEntries(entries);
     }
 
+    @SuppressWarnings("unchecked")
     public java.util.List<SongListWidget.SongEntry> getModifiableChildren() {
         return (java.util.List<SongListWidget.SongEntry>) ((EntryListWidgetAccessor) this).getChildrenList();
     }
@@ -113,10 +114,10 @@ public class SongListWidget extends AbstractSelectionList<SongListWidget.SongEnt
                 return true;
             }
 
-            if(songListWidget.getSelected() == this && lastClickedAt != -1L && Util.now() - lastClickedAt <= 350) {
+            if (songListWidget.getSelected() == this && lastClickedAt != -1L && Util.now() - lastClickedAt <= 350) {
                 // Double click = start song
                 Main.SONG_PLAYER.start(this.song);
-            }else {
+            } else {
                 songListWidget.setSelected(this);
                 lastClickedAt = Util.now();
             }

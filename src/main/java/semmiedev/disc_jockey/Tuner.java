@@ -44,11 +44,11 @@ public class Tuner {
     public void cleanup() {
         // Clear outdated note predictions
         ArrayList<BlockPos> outdatedPredictions = new ArrayList<>();
-        for(Map.Entry<BlockPos, Tuple<Integer, Long>> entry : notePredictions.entrySet()) {
-            if(entry.getValue().getB() < Util.now())
+        for (Map.Entry<BlockPos, Tuple<Integer, Long>> entry : notePredictions.entrySet()) {
+            if (entry.getValue().getB() < Util.now())
                 outdatedPredictions.add(entry.getKey());
         }
-        for(BlockPos outdatedPrediction : outdatedPredictions) notePredictions.remove(outdatedPrediction);
+        for (BlockPos outdatedPrediction : outdatedPredictions) notePredictions.remove(outdatedPrediction);
     }
 
     private HashMap<Byte, BlockPos> getNotes(NoteBlockInstrument instrument) {
@@ -85,31 +85,31 @@ public class Tuner {
 
         final LocalPlayer player = client.player;
         final ClientLevel world = client.level;
-        if(player == null || world == null || song == null) return false;
+        if (player == null || world == null || song == null) return false;
 
         // Create list of available noteblock positions per used instrument
         HashMap<NoteBlockInstrument, ArrayList<BlockPos>> noteblocksForInstrument = new HashMap<>();
-        for(NoteBlockInstrument instrument : NoteBlockInstrument.values())
+        for (NoteBlockInstrument instrument : NoteBlockInstrument.values())
             noteblocksForInstrument.put(instrument, new ArrayList<>());
         final Vec3 playerEyePos = player.getEyePosition();
 
         final int maxOffset; // Rough estimates, of which blocks could be in reach
-        if(Main.config.expectedServerVersion == Config.ExpectedServerVersion.v1_20_4_Or_Earlier) {
+        if (Main.config.expectedServerVersion == Config.ExpectedServerVersion.v1_20_4_Or_Earlier) {
             maxOffset = 7;
-        }else if(Main.config.expectedServerVersion == Config.ExpectedServerVersion.v1_20_5_Or_Later) {
+        } else if (Main.config.expectedServerVersion == Config.ExpectedServerVersion.v1_20_5_Or_Later) {
             maxOffset = (int) Math.ceil(player.blockInteractionRange() + 1.0 + 1.0);
-        }else if(Main.config.expectedServerVersion == Config.ExpectedServerVersion.All) {
+        } else if (Main.config.expectedServerVersion == Config.ExpectedServerVersion.All) {
             maxOffset = Math.min(7, (int) Math.ceil(player.blockInteractionRange() + 1.0 + 1.0));
-        }else {
+        } else {
             throw new NotImplementedException("ExpectedServerVersion Value not implemented: " + Main.config.expectedServerVersion.name());
         }
         final ArrayList<Integer> orderedOffsets = new ArrayList<>();
-        for(int offset = 0; offset <= maxOffset; offset++) {
+        for (int offset = 0; offset <= maxOffset; offset++) {
             orderedOffsets.add(offset);
-            if(offset != 0) orderedOffsets.add(offset * -1);
+            if (offset != 0) orderedOffsets.add(offset * -1);
         }
 
-        for(NoteBlockInstrument instrument : noteblocksForInstrument.keySet().toArray(new NoteBlockInstrument[0])) {
+        for (NoteBlockInstrument instrument : noteblocksForInstrument.keySet().toArray(new NoteBlockInstrument[0])) {
             for (int y : orderedOffsets) {
                 for (int x : orderedOffsets) {
                     for (int z : orderedOffsets) {
@@ -119,7 +119,7 @@ public class Tuner {
                             continue;
                         BlockState blockState = world.getBlockState(blockPos);
                         NoteBlockInstrument blockInstrument = getInstrument(client, blockPos, blockState);
-                        if(blockInstrument == null) continue; // Not a noteblock or not playable due to obstruction
+                        if (blockInstrument == null) continue; // Not a noteblock or not playable due to obstruction
 
                         if (blockInstrument == instrument)
                             noteblocksForInstrument.get(instrument).add(blockPos);
@@ -129,11 +129,11 @@ public class Tuner {
         }
 
         // Remap instruments for funzies
-        if(!instrumentMap.isEmpty()) {
+        if (!instrumentMap.isEmpty()) {
             HashMap<NoteBlockInstrument, ArrayList<BlockPos>> newNoteblocksForInstrument = new HashMap<>();
-            for(NoteBlockInstrument orig : noteblocksForInstrument.keySet()) {
+            for (NoteBlockInstrument orig : noteblocksForInstrument.keySet()) {
                 NoteBlockInstrument mappedInstrument = instrumentMap.getOrDefault(orig, orig);
-                if(mappedInstrument == null) {
+                if (mappedInstrument == null) {
                     // Instrument got likely mapped to "nothing"
                     newNoteblocksForInstrument.put(orig, null);
                     continue;
@@ -147,9 +147,9 @@ public class Tuner {
         noteBlocks = new HashMap<>();
         // Find fitting noteblocks with the least amount of adjustments required (to reduce tuning time)
         ArrayList<Note> capturedNotes = new ArrayList<>();
-        for(Note note : song.uniqueNotes) {
+        for (Note note : song.uniqueNotes) {
             ArrayList<BlockPos> availableBlocks = noteblocksForInstrument.get(note.instrument());
-            if(availableBlocks == null) {
+            if (availableBlocks == null) {
                 // Note was mapped to "nothing". Pretend it got captured, but just ignore it
                 capturedNotes.add(note);
                 getNotes(note.instrument()).put(note.note(), null);
@@ -157,18 +157,18 @@ public class Tuner {
             }
             BlockPos bestBlockPos = null;
             int bestBlockTuningSteps = Integer.MAX_VALUE;
-            for(BlockPos blockPos : availableBlocks) {
+            for (BlockPos blockPos : availableBlocks) {
                 int wantedNote = note.note();
                 int currentNote = client.level.getBlockState(blockPos).getValue(BlockStateProperties.NOTE);
                 int tuningSteps = wantedNote >= currentNote ? wantedNote - currentNote : (25 - currentNote) + wantedNote;
 
-                if(tuningSteps < bestBlockTuningSteps) {
+                if (tuningSteps < bestBlockTuningSteps) {
                     bestBlockPos = blockPos;
                     bestBlockTuningSteps = tuningSteps;
                 }
             }
 
-            if(bestBlockPos != null) {
+            if (bestBlockPos != null) {
                 capturedNotes.add(note);
                 availableBlocks.remove(bestBlockPos);
                 getNotes(note.instrument()).put(note.note(), bestBlockPos);
@@ -182,7 +182,7 @@ public class Tuner {
         // Fill in missingInstrumentBlocks
         for (Note note : missingNotes) {
             NoteBlockInstrument mappedInstrument = instrumentMap.getOrDefault(note.instrument(), note.instrument());
-            if(mappedInstrument == null) continue; // Ignore if mapped to nothing
+            if (mappedInstrument == null) continue; // Ignore if mapped to nothing
             Block block = Note.INSTRUMENT_BLOCKS.get(mappedInstrument);
             Integer got = missingInstrumentBlocks.get(block);
             if (got == null) got = 0;
@@ -190,20 +190,20 @@ public class Tuner {
         }
 
         // Select song, if all noteblocks were found
-        if(missingInstrumentBlocks.isEmpty()) {
+        if (missingInstrumentBlocks.isEmpty()) {
             selectedSong = song;
             return true;
-        }else {
+        } else {
             return false;
         }
     }
 
     private @Nullable NoteBlockInstrument getInstrument(Minecraft client, BlockPos pos, BlockState state) {
-        if(!(state.getBlock() instanceof NoteBlock noteBlock)) return null; // Not a noteblock
+        if (!(state.getBlock() instanceof NoteBlock noteBlock)) return null; // Not a noteblock
 
-        if(!Main.config.instrumentDetectionWorkaround) {
+        if (!Main.config.instrumentDetectionWorkaround) {
             NoteBlockInstrument instrument = state.getValue(BlockStateProperties.NOTEBLOCK_INSTRUMENT);
-            if(!instrument.worksAboveNoteBlock() /*Instrument block is below*/ && !client.level.isEmptyBlock(pos.above())) return null; // Blocked off from playing
+            if (!instrument.worksAboveNoteBlock() /*Instrument block is below*/ && !client.level.isEmptyBlock(pos.above())) return null; // Blocked off from playing
             return instrument;
         }
 
@@ -215,8 +215,8 @@ public class Tuner {
             return aboveBlockInstrument;
         } else {
             NoteBlockInstrument belowBlockInstrument = client.level.getBlockState(pos.below()).getBlock().defaultBlockState().instrument();
-            if(belowBlockInstrument.worksAboveNoteBlock()) return NoteBlockInstrument.HARP;
-            if(!client.level.isEmptyBlock(pos.above())) return null; // Noteblock can't be played
+            if (belowBlockInstrument.worksAboveNoteBlock()) return NoteBlockInstrument.HARP;
+            if (!client.level.isEmptyBlock(pos.above())) return null; // Noteblock can't be played
             return belowBlockInstrument;
         }
     }
@@ -247,7 +247,7 @@ public class Tuner {
             if (client.getConnection() != null && (playerListEntry = client.getConnection().getPlayerInfo(client.player.getGameProfile().id())) != null)
                 ping = playerListEntry.getLatency();
         }
-        if(ping <= 0) {
+        if (ping <= 0) {
             // Assume server did respond with a placeholder ping
             ping = 150; // Assume some bad-ish ping.
         }
@@ -255,20 +255,20 @@ public class Tuner {
     }
 
     public @Nullable TuningFail tickTuning(Minecraft client) {
-        if(tunedAfter != Util.TIMESTAMP_UNINITIALIZED) return null; // Nothing to do. May need to wait a bit after tuning to be considered done (see isTuned()).
+        if (tunedAfter != Util.TIMESTAMP_UNINITIALIZED) return null; // Nothing to do. May need to wait a bit after tuning to be considered done (see isTuned()).
 
-        if(client.player == null || client.level == null) return TuningFail.NotIngame;
-        if(!isSongSelected()) return TuningFail.NoSongSelected;
+        if (client.player == null || client.level == null) return TuningFail.NotIngame;
+        if (!isSongSelected()) return TuningFail.NoSongSelected;
         int ping = getOwnPing(client);
 
         // Update availableInteracts based on current tuningSpeed config
-        switch(Main.config.tuningSpeed) {
+        switch (Main.config.tuningSpeed) {
             case Snail -> availableInteracts = Math.clamp(availableInteracts + 0.5f, 0f, 1f);
             case Safe -> availableInteracts = 1;
             case Spigot -> {
-                if(lastInteractAt == Util.TIMESTAMP_UNINITIALIZED) {
+                if (lastInteractAt == Util.TIMESTAMP_UNINITIALIZED) {
                     availableInteracts = 9f;
-                }else {
+                } else {
                     // Spigot (and Paper + forks) allow 9 interacts per 300 ms
                     availableInteracts += ((Util.now() - lastInteractAt) / (310.0f / 9.0f));
                     availableInteracts = Math.min(9f, Math.max(0f, availableInteracts));
@@ -277,21 +277,21 @@ public class Tuner {
             case Flash -> availableInteracts = Integer.MAX_VALUE;
         }
 
-        if(lastInteractAt == Util.TIMESTAMP_UNINITIALIZED)
+        if (lastInteractAt == Util.TIMESTAMP_UNINITIALIZED)
             lastInteractAt = Util.now();
 
         int fullyTunedBlocks = 0;
         HashMap<BlockPos, Integer> untunedNotes = new HashMap<>();
         for (Note note : selectedSong.uniqueNotes) {
-            if(noteBlocks == null || noteBlocks.get(note.instrument()) == null)
+            if (noteBlocks == null || noteBlocks.get(note.instrument()) == null)
                 continue;
             BlockPos blockPos = noteBlocks.get(note.instrument()).get(note.note());
-            if(blockPos == null) continue;
+            if (blockPos == null) continue;
             BlockState blockState = client.level.getBlockState(blockPos);
             int assumedNote = notePredictions.containsKey(blockPos) ? notePredictions.get(blockPos).getA() : blockState.getValue(BlockStateProperties.NOTE);
 
             if (blockState.hasProperty(BlockStateProperties.NOTE)) {
-                if(assumedNote == note.note() && blockState.getValue(BlockStateProperties.NOTE) == note.note())
+                if (assumedNote == note.note() && blockState.getValue(BlockStateProperties.NOTE) == note.note())
                     fullyTunedBlocks++;
                 if (assumedNote != note.note()) {
                     if (!Util.canInteractWith(client.player, blockPos))
@@ -304,18 +304,18 @@ public class Tuner {
             }
         }
 
-        if(tuneInitialUntunedBlocks == -1 || tuneInitialUntunedBlocks < untunedNotes.size())
+        if (tuneInitialUntunedBlocks == -1 || tuneInitialUntunedBlocks < untunedNotes.size())
             tuneInitialUntunedBlocks = untunedNotes.size();
 
         int existingUniqueNotesCount = 0;
-        for(Note n : selectedSong.uniqueNotes) {
-            if(noteBlocks.get(n.instrument()).get(n.note()) != null)
+        for (Note n : selectedSong.uniqueNotes) {
+            if (noteBlocks.get(n.instrument()).get(n.note()) != null)
                 existingUniqueNotesCount++;
         }
 
-        if(untunedNotes.isEmpty() && fullyTunedBlocks == existingUniqueNotesCount) {
+        if (untunedNotes.isEmpty() && fullyTunedBlocks == existingUniqueNotesCount) {
             // Wait roundrip + 100ms before considering tuned after changing notes (in case the server rejects an interact)
-            if(lastInteractAt == Util.TIMESTAMP_UNINITIALIZED || Util.now() - lastInteractAt >= ping * 2L + 100) {
+            if (lastInteractAt == Util.TIMESTAMP_UNINITIALIZED || Util.now() - lastInteractAt >= ping * 2L + 100) {
                 // Tuning finished, delay a little bit, then officially done!
                 tunedAfter = Util.now() + (long) Math.max(0, Main.config.delayPlaybackStartBySecs) * 1000;
                 tuneInitialUntunedBlocks = -1;
@@ -325,10 +325,10 @@ public class Tuner {
         BlockPos lastBlockPos = null;
         int lastTunedNote = Integer.MIN_VALUE;
         //float roughTuneProgress = 1 - (untunedNotes.size() / Math.max(tuneInitialUntunedBlocks + 0f, 1f));
-        while(availableInteracts >= 1f && !untunedNotes.isEmpty()) {
+        while (availableInteracts >= 1f && !untunedNotes.isEmpty()) {
             BlockPos blockPos = null;
             int searches = 0;
-            while(blockPos == null) {
+            while (blockPos == null) {
                 searches++;
                 // Find higher note
                 for (Map.Entry<BlockPos, Integer> entry : untunedNotes.entrySet()) {
@@ -347,15 +347,15 @@ public class Tuner {
                     }
                 }
                 // Not found. Reset last note
-                if(blockPos == null)
+                if (blockPos == null)
                     lastTunedNote = Integer.MIN_VALUE;
-                if(blockPos == null && searches > 1) {
+                if (blockPos == null && searches > 1) {
                     // Something went wrong. Take any note (one should at least exist here)
                     blockPos = untunedNotes.keySet().toArray(new BlockPos[0])[0];
                     break;
                 }
             }
-            if(blockPos == null)
+            if (blockPos == null)
                 return TuningFail.Unexpected; // Something went very, very wrong!
 
             lastTunedNote = untunedNotes.get(blockPos);
@@ -367,12 +367,11 @@ public class Tuner {
             availableInteracts -= 1f;
             lastBlockPos = blockPos;
         }
-        if(lastBlockPos != null) {
+        if (lastBlockPos != null) {
             // Turn head into spinning with time and lookup up further the further tuning is progressed
             //client.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(((float) (System.currentTimeMillis() % 2000)) * (360f/2000f), (1 - roughTuneProgress) * 180 - 90, true));
             client.player.swing(InteractionHand.MAIN_HAND);
         }
-
         return null;
     }
 

@@ -158,9 +158,9 @@ public class DiscJockeyScreen extends Screen {
                 .displayOnlyValue()
                 .withValues(true, false)
                 .create((width / 4) - 25, 32 + 20 + 20 + 30 + 5, 20, 20, Component.empty(), (button, value) -> {
-            if(value && Main.SONG_PLAYER.song != null && Main.SONG_PLAYER.didSongReachEnd) {
+            if (value && Main.SONG_PLAYER.song != null && Main.SONG_PLAYER.didSongReachEnd) {
                 Main.SONG_PLAYER.start(Main.SONG_PLAYER.song); // Restart song
-            }else {
+            } else {
                 Main.SONG_PLAYER.running = value;
             }
         });
@@ -185,17 +185,19 @@ public class DiscJockeyScreen extends Screen {
         boolean didSongReachEnd = Main.SONG_PLAYER.didSongReachEnd;
 
         if(!running) {
-            if(didSongReachEnd)
+            if (didSongReachEnd) {
                 return SONGSTATE_FINISHED;
-            else if(Main.SONG_PLAYER.getSongElapsedSeconds() == 0.0)
+            } else if (Main.SONG_PLAYER.getSongElapsedSeconds() == 0.0) {
                 return SONGSTATE_STOPPED;
-            else
+            } else {
                 return SONGSTATE_PAUSED;
-        }else {
-            if(!tuned)
+            }
+        } else {
+            if (!tuned) {
                 return SONGSTATE_TUNING;
-            else
+            } else {
                 return SONGSTATE_PLAYING;
+            }
         }
     }
 

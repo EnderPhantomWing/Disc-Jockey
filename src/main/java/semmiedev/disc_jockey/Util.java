@@ -19,20 +19,20 @@ public class Util {
     // With 1.20.5 and later, the server does a more complex check, to the closest point of a full block hitbox
     // (max distance is BlockInteractRange + 1.0).
     public static boolean canInteractWith(LocalPlayer player, BlockPos blockPos) {
-        if(player == null) return false;
+        if (player == null) return false;
 
         final Vec3 eyePos = player.getEyePosition();
-        if(Main.config.expectedServerVersion == Config.ExpectedServerVersion.v1_20_4_Or_Earlier) {
+        if (Main.config.expectedServerVersion == Config.ExpectedServerVersion.v1_20_4_Or_Earlier) {
             return eyePos.distanceToSqr(blockPos.getCenter()) <= 6.0 * 6.0;
-        }else if(Main.config.expectedServerVersion == Config.ExpectedServerVersion.v1_20_5_Or_Later) {
+        } else if (Main.config.expectedServerVersion == Config.ExpectedServerVersion.v1_20_5_Or_Later) {
             double blockInteractRange = player.blockInteractionRange() + 1.0;
             return new AABB(blockPos).distanceToSqr(eyePos) < blockInteractRange * blockInteractRange;
-        }else if(Main.config.expectedServerVersion == Config.ExpectedServerVersion.All) {
+        } else if(Main.config.expectedServerVersion == Config.ExpectedServerVersion.All) {
             // Require both checks to succeed (aka use worst distance)
             double blockInteractRange = player.blockInteractionRange() + 1.0;
             return eyePos.distanceToSqr(blockPos.getCenter()) <= 6.0 * 6.0
                     && new AABB(blockPos).distanceToSqr(eyePos) < blockInteractRange * blockInteractRange;
-        }else {
+        } else {
             throw new NotImplementedException("ExpectedServerVersion Value not implemented: " + Main.config.expectedServerVersion.name());
         }
     }
