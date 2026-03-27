@@ -6,7 +6,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.Vec3;
 
-public class Previewer implements ClientTickEvents.StartWorldTick {
+public class Previewer implements ClientTickEvents.StartLevelTick {
     public boolean running;
 
     private int i;

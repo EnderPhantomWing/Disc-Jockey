@@ -1,8 +1,8 @@
 package semmiedev.disc_jockey.gui.screen;
 
-import me.shedaniel.autoconfig.AutoConfig;
+import me.shedaniel.autoconfig.AutoConfigClient;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
@@ -172,7 +172,7 @@ public class DiscJockeyScreen extends Screen {
         addRenderableWidget(stopButton);
 
         // Config button in bottom left
-        configButton = Button.builder(CONFIG, (button) -> minecraft.setScreen(AutoConfig.getConfigScreen(Config.class, this).get()))
+        configButton = Button.builder(CONFIG, (button) -> minecraft.setScreen(AutoConfigClient.getConfigScreen(Config.class, this).get()))
                 .pos(10, height - 30)
                 .size(100, 20)
                 .build();
@@ -202,17 +202,17 @@ public class DiscJockeyScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(GuiGraphics context, int mouseX, int mouseY, float delta) {
-        super.renderBackground(context, mouseX, mouseY, delta);
+    public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+        super.extractBackground(context, mouseX, mouseY, delta);
         context.blit(RenderPipelines.GUI_TEXTURED, AbstractSelectionList.INWORLD_MENU_LIST_BACKGROUND, 5, 32, width / 2, 32 + 20 + 20 + 30 + 5 + 20 + 5, this.width / 2 - 10, 20 + 20 + 30 + 5 + 20 + 5, 32, 32);
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-        super.render(context, mouseX, mouseY, delta);
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+        super.extractRenderState(context, mouseX, mouseY, delta);
 
-        context.drawCenteredString(font, DROP_HINT, width / 2, 5, 0xFFFFFF);
-        context.drawCenteredString(font, SELECT_SONG, (width / 4 * 3), 20, 0xFFFFFF);
+        context.text(font, DROP_HINT, width / 2, 5, 0xFFFFFF);
+        context.text(font, SELECT_SONG, (width / 4 * 3), 20, 0xFFFFFF);
     }
 
     @Override
