@@ -1,12 +1,43 @@
 package semmiedev.disc_jockey;
 
 import java.util.HashMap;
+import java.util.List;
+
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 
 public record Note(NoteBlockInstrument instrument, byte note) {
     public static final HashMap<NoteBlockInstrument, Block> INSTRUMENT_BLOCKS = new HashMap<>();
+
+    static List<Block> copperBlock = List.of(
+            Blocks.COPPER_BLOCK,
+            Blocks.CHISELED_COPPER,
+            Blocks.CUT_COPPER,
+            Blocks.CUT_COPPER_STAIRS,
+            Blocks.CUT_COPPER_SLAB
+    );
+    static List<Block> exposedCopperBlock = List.of(
+            Blocks.EXPOSED_COPPER,
+            Blocks.EXPOSED_CHISELED_COPPER,
+            Blocks.EXPOSED_CUT_COPPER,
+            Blocks.EXPOSED_CUT_COPPER_STAIRS,
+            Blocks.EXPOSED_CUT_COPPER_SLAB
+    );
+    static List<Block> weatheredCopperBlock = List.of(
+            Blocks.WEATHERED_COPPER,
+            Blocks.WEATHERED_CHISELED_COPPER,
+            Blocks.WEATHERED_CUT_COPPER,
+            Blocks.WEATHERED_CUT_COPPER_STAIRS,
+            Blocks.WEATHERED_CUT_COPPER_SLAB
+    );
+    static List<Block> oxidizedCopperBlock = List.of(
+            Blocks.OXIDIZED_COPPER,
+            Blocks.OXIDIZED_CHISELED_COPPER,
+            Blocks.OXIDIZED_CUT_COPPER,
+            Blocks.OXIDIZED_CUT_COPPER_STAIRS,
+            Blocks.OXIDIZED_CUT_COPPER_SLAB
+    );
 
     public static final byte LAYER_SHIFT = Short.SIZE;
     public static final byte INSTRUMENT_SHIFT = Short.SIZE * 2;
@@ -28,8 +59,11 @@ public record Note(NoteBlockInstrument instrument, byte note) {
             NoteBlockInstrument.DIDGERIDOO,
             NoteBlockInstrument.BIT,
             NoteBlockInstrument.BANJO,
-            NoteBlockInstrument.PLING
-
+            NoteBlockInstrument.PLING,
+            NoteBlockInstrument.TRUMPET,
+            NoteBlockInstrument.TRUMPET_EXPOSED,
+            NoteBlockInstrument.TRUMPET_WEATHERED,
+            NoteBlockInstrument.TRUMPET_OXIDIZED
     };
 
     static {
@@ -49,5 +83,9 @@ public record Note(NoteBlockInstrument instrument, byte note) {
         INSTRUMENT_BLOCKS.put(NoteBlockInstrument.BIT, Blocks.EMERALD_BLOCK);
         INSTRUMENT_BLOCKS.put(NoteBlockInstrument.BANJO, Blocks.HAY_BLOCK);
         INSTRUMENT_BLOCKS.put(NoteBlockInstrument.PLING, Blocks.GLOWSTONE);
+        INSTRUMENT_BLOCKS.put(NoteBlockInstrument.TRUMPET, (Block) copperBlock);
+        INSTRUMENT_BLOCKS.put(NoteBlockInstrument.TRUMPET_EXPOSED, (Block) exposedCopperBlock);
+        INSTRUMENT_BLOCKS.put(NoteBlockInstrument.TRUMPET_WEATHERED, (Block) weatheredCopperBlock);
+        INSTRUMENT_BLOCKS.put(NoteBlockInstrument.TRUMPET_OXIDIZED, (Block) oxidizedCopperBlock);
     }
 }
