@@ -1,15 +1,15 @@
 package semmiedev.disc_jockey.gui.screen;
 
 import me.shedaniel.autoconfig.AutoConfig;
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ConfirmScreen;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.*;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.client.gui.components.*;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.ConfirmScreen;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 import semmiedev.disc_jockey.*;
 import semmiedev.disc_jockey.gui.SongListWidget;
 import semmiedev.disc_jockey.gui.SongTimeSliderWidget;
@@ -24,31 +24,31 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class DiscJockeyScreen extends Screen {
-    private static final MutableText
-            SELECT_SONG = Text.translatable(Main.MOD_ID+".screen.select_song"),
-            PLAY = Text.translatable(Main.MOD_ID+".screen.play"),
-            PLAY_STOP = Text.translatable(Main.MOD_ID+".screen.play.stop"),
-            PREVIEW = Text.translatable(Main.MOD_ID+".screen.preview"),
-            PREVIEW_STOP = Text.translatable(Main.MOD_ID+".screen.preview.stop"),
-            DROP_HINT = Text.translatable(Main.MOD_ID+".screen.drop_hint").formatted(Formatting.GRAY),
-            SONGSTATE_PLAYING = Text.translatable(Main.MOD_ID+".screen.songstate.playing").styled((style) -> style.withItalic(true).withColor(0xDDDDDD)),
-            SONGSTATE_PAUSED = Text.translatable(Main.MOD_ID+".screen.songstate.paused").styled((style) -> style.withItalic(true).withColor(0xDDDDDD)),
-            SONGSTATE_FINISHED = Text.translatable(Main.MOD_ID+".screen.songstate.finished").styled((style) -> style.withItalic(true).withColor(0xDDDDDD)),
-            SONGSTATE_STOPPED = Text.translatable(Main.MOD_ID+".screen.songstate.stopped").styled((style) -> style.withItalic(true).withColor(0xDDDDDD)),
-            SONGSTATE_TUNING = Text.translatable(Main.MOD_ID+".screen.songstate.tuning").styled((style) -> style.withItalic(true).withColor(0xDDDDDD)),
-            PLEASE_SELECT_SONG = Text.translatable(Main.MOD_ID+".screen.please_select_song").styled((style) -> style.withItalic(true)),
-            CONFIG = Text.translatable(Main.MOD_ID+".screen.config")
+    private static final MutableComponent
+            SELECT_SONG = Component.translatable(Main.MOD_ID+".screen.select_song"),
+            PLAY = Component.translatable(Main.MOD_ID+".screen.play"),
+            PLAY_STOP = Component.translatable(Main.MOD_ID+".screen.play.stop"),
+            PREVIEW = Component.translatable(Main.MOD_ID+".screen.preview"),
+            PREVIEW_STOP = Component.translatable(Main.MOD_ID+".screen.preview.stop"),
+            DROP_HINT = Component.translatable(Main.MOD_ID+".screen.drop_hint").withStyle(ChatFormatting.GRAY),
+            SONGSTATE_PLAYING = Component.translatable(Main.MOD_ID+".screen.songstate.playing").withStyle((style) -> style.withItalic(true).withColor(0xDDDDDD)),
+            SONGSTATE_PAUSED = Component.translatable(Main.MOD_ID+".screen.songstate.paused").withStyle((style) -> style.withItalic(true).withColor(0xDDDDDD)),
+            SONGSTATE_FINISHED = Component.translatable(Main.MOD_ID+".screen.songstate.finished").withStyle((style) -> style.withItalic(true).withColor(0xDDDDDD)),
+            SONGSTATE_STOPPED = Component.translatable(Main.MOD_ID+".screen.songstate.stopped").withStyle((style) -> style.withItalic(true).withColor(0xDDDDDD)),
+            SONGSTATE_TUNING = Component.translatable(Main.MOD_ID+".screen.songstate.tuning").withStyle((style) -> style.withItalic(true).withColor(0xDDDDDD)),
+            PLEASE_SELECT_SONG = Component.translatable(Main.MOD_ID+".screen.please_select_song").withStyle((style) -> style.withItalic(true)),
+            CONFIG = Component.translatable(Main.MOD_ID+".screen.config")
     ;
 
-    private TextWidget songTitle;
-    private TextWidget songState;
-    private CyclingButtonWidget<Boolean> playPauseButton;
-    private ButtonWidget stopButton;
+    private StringWidget songTitle;
+    private StringWidget songState;
+    private CycleButton<Boolean> playPauseButton;
+    private Button stopButton;
     private SongTimeSliderWidget timeBar;
-    private ButtonWidget configButton;
+    private Button configButton;
 
     private SongListWidget songListWidget;
-    private ButtonWidget playButton, previewButton;
+    private Button playButton, previewButton;
     private boolean shouldFilter;
     private String query = "";
 
@@ -59,51 +59,51 @@ public class DiscJockeyScreen extends Screen {
     @Override
     protected void init() {
         shouldFilter = true;
-        songListWidget = new SongListWidget(client, width / 2 - 10, height - 64 - 32, 32, 20);
+        songListWidget = new SongListWidget(minecraft, width / 2 - 10, height - 64 - 32, 32, 20);
         songListWidget.setX(width / 2);
-        addDrawableChild(songListWidget);
+        addRenderableWidget(songListWidget);
         for (int i = 0; i < SongLoader.SONGS.size(); i++) {
             Song song = SongLoader.SONGS.get(i);
             song.entry.songListWidget = songListWidget;
             if (song.entry.selected) songListWidget.setSelected(song.entry);
         }
 
-        playButton = ButtonWidget.builder(PLAY, button -> {
+        playButton = Button.builder(PLAY, button -> {
             if (Main.SONG_PLAYER.running) {
                 Main.SONG_PLAYER.stop();
             } else {
-                SongListWidget.SongEntry entry = songListWidget.getSelectedOrNull();
+                SongListWidget.SongEntry entry = songListWidget.getSelected();
                 if (entry != null) {
                     Main.SONG_PLAYER.start(entry.song);
                     //client.setScreen(null);
                 }
             }
-        }).dimensions((width / 4 * 3) - 160, height - 61, 100, 20).build();
-        addDrawableChild(playButton);
+        }).bounds((width / 4 * 3) - 160, height - 61, 100, 20).build();
+        addRenderableWidget(playButton);
 
-        previewButton = ButtonWidget.builder(PREVIEW, button -> {
+        previewButton = Button.builder(PREVIEW, button -> {
             if (Main.PREVIEWER.running) {
                 Main.PREVIEWER.stop();
             } else {
-                SongListWidget.SongEntry entry = songListWidget.getSelectedOrNull();
+                SongListWidget.SongEntry entry = songListWidget.getSelected();
                 if (entry != null) Main.PREVIEWER.start(entry.song);
             }
-        }).dimensions((width / 4 * 3) - 50, height - 61, 100, 20).build();
-        addDrawableChild(previewButton);
+        }).bounds((width / 4 * 3) - 50, height - 61, 100, 20).build();
+        addRenderableWidget(previewButton);
 
-        addDrawableChild(ButtonWidget.builder(Text.translatable(Main.MOD_ID+".screen.blocks"), button -> {
+        addRenderableWidget(Button.builder(Component.translatable(Main.MOD_ID+".screen.blocks"), button -> {
             // TODO: 6/2/2022 Add an auto build mode
             if (BlocksOverlay.itemStacks == null) {
-                SongListWidget.SongEntry entry = songListWidget.getSelectedOrNull();
+                SongListWidget.SongEntry entry = songListWidget.getSelected();
                 if (entry != null) {
-                    client.setScreen(null);
+                    minecraft.setScreen(null);
 
                     BlocksOverlay.itemStacks = new ItemStack[0];
                     BlocksOverlay.amounts = new int[0];
                     BlocksOverlay.amountOfNoteBlocks = entry.song.uniqueNotes.size();
 
                     for (Note note : entry.song.uniqueNotes) {
-                        ItemStack itemStack = Note.INSTRUMENT_BLOCKS.get(note.instrument()).asItem().getDefaultStack();
+                        ItemStack itemStack = Note.INSTRUMENT_BLOCKS.get(note.instrument()).asItem().getDefaultInstance();
                         int index = -1;
 
                         for (int i = 0; i < BlocksOverlay.itemStacks.length; i++) {
@@ -126,56 +126,56 @@ public class DiscJockeyScreen extends Screen {
                 }
             } else {
                 BlocksOverlay.itemStacks = null;
-                client.setScreen(null);
+                minecraft.setScreen(null);
             }
-        }).dimensions((width / 4 * 3) + 60, height - 61, 100, 20).build());
+        }).bounds((width / 4 * 3) + 60, height - 61, 100, 20).build());
 
-        TextFieldWidget searchBar = new TextFieldWidget(textRenderer, (width / 4 * 3) - 75, height - 31, 150, 20, Text.empty());
-        searchBar.setPlaceholder(Text.translatable(Main.MOD_ID+".screen.search").styled((style) -> style.withItalic(true).withColor(0xDDDDDD)));
-        searchBar.setChangedListener(query -> {
+        EditBox searchBar = new EditBox(font, (width / 4 * 3) - 75, height - 31, 150, 20, Component.empty());
+        searchBar.setHint(Component.translatable(Main.MOD_ID+".screen.search").withStyle((style) -> style.withItalic(true).withColor(0xDDDDDD)));
+        searchBar.setResponder(query -> {
             query = query.toLowerCase().replaceAll("\\s", "");
             if (this.query.equals(query)) return;
             this.query = query;
             shouldFilter = true;
         });
-        addDrawableChild(searchBar);
+        addRenderableWidget(searchBar);
 
         // TODO: 6/2/2022 Add a reload button
 
         // Player:
-        songState = new TextWidget(10, 32, width / 2 - 20, 20, Text.empty(), getTextRenderer());
-        addDrawableChild(songState);
-        songTitle = new TextWidget(10, 32 + 20, width / 2 - 20, 20, Text.empty(), getTextRenderer());
+        songState = new StringWidget(10, 32, width / 2 - 20, 20, Component.empty(), getFont());
+        addRenderableWidget(songState);
+        songTitle = new StringWidget(10, 32 + 20, width / 2 - 20, 20, Component.empty(), getFont());
         //songTitle.alignLeft();
-        addDrawableChild(songTitle);
+        addRenderableWidget(songTitle);
         timeBar = new SongTimeSliderWidget(10, 32 + 20 + 20, width / 2 - 20, 30);
-        addDrawableChild(timeBar);
-        playPauseButton = CyclingButtonWidget.<Boolean>builder((value) -> Text.literal(value ? "⏸" : "▶"), Main.SONG_PLAYER.running)
-                .omitKeyText()
-                .values(true, false)
-                .build((width / 4) - 25, 32 + 20 + 20 + 30 + 5, 20, 20, Text.empty(), (button, value) -> {
+        addRenderableWidget(timeBar);
+        playPauseButton = CycleButton.<Boolean>builder((value) -> Component.literal(value ? "⏸" : "▶"), Main.SONG_PLAYER.running)
+                .displayOnlyValue()
+                .withValues(true, false)
+                .create((width / 4) - 25, 32 + 20 + 20 + 30 + 5, 20, 20, Component.empty(), (button, value) -> {
             if(value && Main.SONG_PLAYER.song != null && Main.SONG_PLAYER.didSongReachEnd) {
                 Main.SONG_PLAYER.start(Main.SONG_PLAYER.song); // Restart song
             }else {
                 Main.SONG_PLAYER.running = value;
             }
         });
-        addDrawableChild(playPauseButton);
-        stopButton = ButtonWidget.builder(Text.literal("⏹"), button -> Main.SONG_PLAYER.stop())
-                .position((width / 4) + 5, 32 + 20 + 20 + 30 + 5)
+        addRenderableWidget(playPauseButton);
+        stopButton = Button.builder(Component.literal("⏹"), button -> Main.SONG_PLAYER.stop())
+                .pos((width / 4) + 5, 32 + 20 + 20 + 30 + 5)
                 .size(20, 20)
                 .build();
-        addDrawableChild(stopButton);
+        addRenderableWidget(stopButton);
 
         // Config button in bottom left
-        configButton = ButtonWidget.builder(CONFIG, (button) -> client.setScreen(AutoConfig.getConfigScreen(Config.class, this).get()))
-                .position(10, height - 30)
+        configButton = Button.builder(CONFIG, (button) -> minecraft.setScreen(AutoConfig.getConfigScreen(Config.class, this).get()))
+                .pos(10, height - 30)
                 .size(100, 20)
                 .build();
-        addDrawableChild(configButton);
+        addRenderableWidget(configButton);
     }
 
-    private static Text getPlaybackStateText() {
+    private static Component getPlaybackStateText() {
         boolean running = Main.SONG_PLAYER.running;
         boolean tuned = Main.SONG_PLAYER.tuner.isTuned();
         boolean didSongReachEnd = Main.SONG_PLAYER.didSongReachEnd;
@@ -196,17 +196,17 @@ public class DiscJockeyScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void renderBackground(GuiGraphics context, int mouseX, int mouseY, float delta) {
         super.renderBackground(context, mouseX, mouseY, delta);
-        context.drawTexture(RenderPipelines.GUI_TEXTURED, EntryListWidget.INWORLD_MENU_LIST_BACKGROUND_TEXTURE, 5, 32, width / 2, 32 + 20 + 20 + 30 + 5 + 20 + 5, this.width / 2 - 10, 20 + 20 + 30 + 5 + 20 + 5, 32, 32);
+        context.blit(RenderPipelines.GUI_TEXTURED, AbstractSelectionList.INWORLD_MENU_LIST_BACKGROUND, 5, 32, width / 2, 32 + 20 + 20 + 30 + 5 + 20 + 5, this.width / 2 - 10, 20 + 20 + 30 + 5 + 20 + 5, 32, 32);
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
 
-        context.drawCenteredTextWithShadow(textRenderer, DROP_HINT, width / 2, 5, 0xFFFFFF);
-        context.drawCenteredTextWithShadow(textRenderer, SELECT_SONG, (width / 4 * 3), 20, 0xFFFFFF);
+        context.drawCenteredString(font, DROP_HINT, width / 2, 5, 0xFFFFFF);
+        context.drawCenteredString(font, SELECT_SONG, (width / 4 * 3), 20, 0xFFFFFF);
     }
 
     @Override
@@ -214,14 +214,14 @@ public class DiscJockeyScreen extends Screen {
         songState.setMessage(getPlaybackStateText());
         timeBar.update();
         playPauseButton.setValue(Main.SONG_PLAYER.running);
-        songTitle.setMessage(Main.SONG_PLAYER.song != null ? Text.literal(Main.SONG_PLAYER.song.displayName) : PLEASE_SELECT_SONG);
+        songTitle.setMessage(Main.SONG_PLAYER.song != null ? Component.literal(Main.SONG_PLAYER.song.displayName) : PLEASE_SELECT_SONG);
 
         previewButton.setMessage(Main.PREVIEWER.running ? PREVIEW_STOP : PREVIEW);
         playButton.setMessage(Main.SONG_PLAYER.running ? PLAY_STOP : PLAY);
 
         if (shouldFilter) {
             shouldFilter = false;
-            songListWidget.setScrollY(0);
+            songListWidget.setScrollAmount(0);
             java.util.List<SongListWidget.SongEntry> newEntries = new java.util.ArrayList<>();
             boolean empty = query.isEmpty();
             int favoriteIndex = 0;
@@ -240,11 +240,11 @@ public class DiscJockeyScreen extends Screen {
     }
 
     @Override
-    public void onFilesDropped(List<Path> paths) {
+    public void onFilesDrop(List<Path> paths) {
         String string = paths.stream().map(Path::getFileName).map(Path::toString).collect(Collectors.joining(", "));
         if (string.length() > 300) string = string.substring(0, 300)+"...";
 
-        client.setScreen(new ConfirmScreen(confirmed -> {
+        minecraft.setScreen(new ConfirmScreen(confirmed -> {
             if (confirmed) {
                 paths.forEach(path -> {
                     try {
@@ -264,18 +264,18 @@ public class DiscJockeyScreen extends Screen {
 
                 SongLoader.sort();
             }
-            client.setScreen(this);
-        }, Text.translatable(Main.MOD_ID+".screen.drop_confirm"), Text.literal(string)));
+            minecraft.setScreen(this);
+        }, Component.translatable(Main.MOD_ID+".screen.drop_confirm"), Component.literal(string)));
     }
 
     @Override
-    public boolean shouldPause() {
+    public boolean isPauseScreen() {
         return false;
     }
 
     @Override
-    public void close() {
-        super.close();
+    public void onClose() {
+        super.onClose();
         new Thread(() -> Main.configHolder.save()).start();
     }
 }

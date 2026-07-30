@@ -1,16 +1,19 @@
 package semmiedev.disc_jockey;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.hud.ChatHud;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
-import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.*;
-import net.minecraft.world.GameMode;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.ChatComponent;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
+import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
+import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 public class SongPlayer implements ClientTickEvents.StartWorldTick {
@@ -60,7 +63,7 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
 
     public synchronized void start(Song song) {
         if (!Main.config.hideWarning && !warned) {
-            MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(Text.translatable("disc_jockey.warning").formatted(Formatting.BOLD, Formatting.RED));
+            Minecraft.getInstance().gui.getChat().addMessage(Component.translatable("disc_jockey.warning").withStyle(ChatFormatting.BOLD, ChatFormatting.RED));
             warned = true;
             return;
         }
@@ -102,11 +105,11 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
         if(!tuner.isTuned()) return;
 
         while (running) {
-            MinecraftClient client = MinecraftClient.getInstance();
-            GameMode gameMode = client.interactionManager == null ? null : client.interactionManager.getCurrentGameMode();
+            Minecraft client = Minecraft.getInstance();
+            GameType gameMode = client.gameMode == null ? null : client.gameMode.getPlayerMode();
             // In the best case, gameMode would only be queried in sync Ticks, no here
-            if (gameMode == null || !gameMode.isSurvivalLike()) {
-                client.inGameHud.getChatHud().addMessage(Text.translatable(Main.MOD_ID+".player.invalid_game_mode", gameMode == null ? "unknown" : gameMode.getTranslatableName()).formatted(Formatting.RED));
+            if (gameMode == null || !gameMode.isSurvival()) {
+                client.gui.getChat().addMessage(Component.translatable(Main.MOD_ID+".player.invalid_game_mode", gameMode == null ? "unknown" : gameMode.getLongDisplayName()).withStyle(ChatFormatting.RED));
                 stop();
                 return;
             }
@@ -121,25 +124,25 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
                 }
                 if (!Util.canInteractWith(client.player, blockPos)) {
                     stop();
-                    client.inGameHud.getChatHud().addMessage(Text.translatable(Main.MOD_ID+".player.too_far").formatted(Formatting.RED));
+                    client.gui.getChat().addMessage(Component.translatable(Main.MOD_ID+".player.too_far").withStyle(ChatFormatting.RED));
                     return;
                 }
-                Vec3d unit = Vec3d.ofCenter(blockPos, 0.5).subtract(client.player.getEyePos()).normalize();
+                Vec3 unit = Vec3.upFromBottomCenterOf(blockPos, 0.5).subtract(client.player.getEyePosition()).normalize();
                 if(rateLimiter.canSendLookPacket()) {
-                    client.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(MathHelper.wrapDegrees((float) (MathHelper.atan2(unit.z, unit.x) * 57.2957763671875) - 90.0f), MathHelper.wrapDegrees((float) (-(MathHelper.atan2(unit.y, Math.sqrt(unit.x * unit.x + unit.z * unit.z)) * 57.2957763671875))), client.player.isOnGround(), client.player.horizontalCollision));                        rateLimiter.onLookPacketSent();
+                    client.getConnection().send(new ServerboundMovePlayerPacket.Rot(Mth.wrapDegrees((float) (Mth.atan2(unit.z, unit.x) * 57.2957763671875) - 90.0f), Mth.wrapDegrees((float) (-(Mth.atan2(unit.y, Math.sqrt(unit.x * unit.x + unit.z * unit.z)) * 57.2957763671875))), client.player.onGround(), client.player.horizontalCollision));                        rateLimiter.onLookPacketSent();
                     rateLimiter.onLookPacketSent();
                 }
                 if(rateLimiter.canSendAnyPacket()) {
                     // TODO: 5/30/2022 Check if the block needs tuning
-                    client.player.networkHandler.sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, blockPos, Direction.UP, 0));
+                    client.player.connection.send(new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, blockPos, Direction.UP, 0));
                     rateLimiter.onPacketSent();
                 }
                 if(rateLimiter.canSendCosmeticPacket()) {
-                    client.player.networkHandler.sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.ABORT_DESTROY_BLOCK, blockPos, Direction.UP, 0));
+                    client.player.connection.send(new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK, blockPos, Direction.UP, 0));
                     rateLimiter.onPacketSent();
                 }
                 if(rateLimiter.canSendSwingPacket()) {
-                    client.executeSync(() -> client.player.swingHand(Hand.MAIN_HAND));
+                    client.executeIfPossible(() -> client.player.swing(InteractionHand.MAIN_HAND));
                     rateLimiter.onSwingPacketSent();
                 }
 
@@ -164,9 +167,9 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
     }
 
     @Override
-    public void onStartTick(ClientWorld world) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        if(world == null || client.world == null || client.player == null) return;
+    public void onStartTick(ClientLevel world) {
+        Minecraft client = Minecraft.getInstance();
+        if(world == null || client.level == null || client.player == null) return;
         if(song == null || !running) return;
 
         tuner.cleanup(); // Housekeeping
@@ -175,14 +178,14 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
         if (!tuner.isSongSelected()) {
             if (!tuner.selectSong(client, song)) {
                 if(!tuner.getMissingInstrumentBlocks().isEmpty()) {
-                    ChatHud chatHud = MinecraftClient.getInstance().inGameHud.getChatHud();
-                    chatHud.addMessage(Text.translatable(Main.MOD_ID + ".player.invalid_note_blocks").formatted(Formatting.RED));
-                    tuner.getMissingInstrumentBlocks().forEach((block, integer) -> chatHud.addMessage(Text.literal(block.getName().getString() + " × " + integer).formatted(Formatting.RED)));
+                    ChatComponent chatHud = Minecraft.getInstance().gui.getChat();
+                    chatHud.addMessage(Component.translatable(Main.MOD_ID + ".player.invalid_note_blocks").withStyle(ChatFormatting.RED));
+                    tuner.getMissingInstrumentBlocks().forEach((block, integer) -> chatHud.addMessage(Component.literal(block.getName().getString() + " × " + integer).withStyle(ChatFormatting.RED)));
                     stop();
                     return;
                 }else {
                     Main.LOGGER.error("Failed to select song to unknown / unexpected reason!");
-                    client.inGameHud.getChatHud().addMessage(Text.translatable(Main.MOD_ID + ".selectsong_fail_unknown").formatted(Formatting.RED));
+                    client.gui.getChat().addMessage(Component.translatable(Main.MOD_ID + ".selectsong_fail_unknown").withStyle(ChatFormatting.RED));
                     stop();
                     return;
                 }
@@ -196,12 +199,12 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
             Tuner.TuningFail tuningFail = tuner.tickTuning(client);
             if (tuningFail == Tuner.TuningFail.MovedTooFarAway) {
                 stop();
-                client.inGameHud.getChatHud().addMessage(Text.translatable(Main.MOD_ID + ".player.too_far").formatted(Formatting.RED));
+                client.gui.getChat().addMessage(Component.translatable(Main.MOD_ID + ".player.too_far").withStyle(ChatFormatting.RED));
                 return;
             } else if(tuningFail != null) {
                 stop();
                 Main.LOGGER.error("Tuning song failed: " + tuningFail.name());
-                client.inGameHud.getChatHud().addMessage(Text.translatable(Main.MOD_ID + ".player.tuning_fail_other", tuningFail.name()).formatted(Formatting.RED));
+                client.gui.getChat().addMessage(Component.translatable(Main.MOD_ID + ".player.tuning_fail_other", tuningFail.name()).withStyle(ChatFormatting.RED));
                 return;
             }
         }
