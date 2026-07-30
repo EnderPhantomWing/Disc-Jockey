@@ -1,0 +1,25 @@
+name: Feature Request [CN]
+description: 为这个项目提出一个想法
+labels: [ ]
+body:
+  - type: textarea
+    id: motivation
+    attributes:
+      label: 添加原因
+      description: 你为什么想要这个功能？你想解决什么问题？建议的功能对此有何帮助？
+      placeholder: 告诉我们您想要什么！
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: 描述
+      description: 尽可能详细地描述您想要的功能
+      placeholder: 我想在半夜抬头时看到绚丽的星空。
+    validations:
+      required: true
+  - type: textarea
+    id: other-information
+    attributes:
+      label: 其他信息
+      description: 此功能请求的其他有用信息。如果没有则留空。

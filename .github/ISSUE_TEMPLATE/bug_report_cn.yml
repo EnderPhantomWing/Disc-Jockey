@@ -1,0 +1,79 @@
+name: Bug Report [CN]
+description: 感觉哪里不对劲，可能是个bug。
+labels: [ ]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug 描述
+      description: |
+        对这个漏洞的描述要清晰简洁。
+        是游戏崩溃、意外行为，还是出了什么问题？
+        如果适用，请附上截图以帮助解释这个漏洞。
+      placeholder: 告诉我们你看到了什么！
+    validations:
+      required: true
+  - type: textarea
+    id: to-reproduce
+    attributes:
+      label: 复现步骤
+      description: 复现 Bug 的步骤
+      placeholder: |
+        1. 创建世界
+        2. 等到午夜
+        3. 拥抱苦力怕
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: 预期行为
+      description: 你原本期待会发生什么？
+      placeholder: 苦力怕爆炸
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: 实际行为
+      description: 到底发生了什么？
+      placeholder: 苦力怕向天空飞去
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: |-
+        如果是崩溃，请将 `logs` 文件夹中的相应 Minecraft 日志或 `crash-reports` 文件夹中的崩溃报告发送到这里。
+        请将日志文件作为附件上传，或者将日志上传到 [pastebin](https://pastebin.com/) / [mclo.gs](https://mclo.gs/) 并将网址粘贴到这里。 
+        请勿直接粘贴整个日志文件。
+        如果没有日志文件，请留空。
+      placeholder: https://pastebin.com/J6b7lKxR
+  - type: input
+    id: minecraft-version
+    attributes:
+      label: MC 版本
+      description: 出现 bug 的 Minecraft 版本
+      placeholder: 1.21.1
+    validations:
+      required: true
+  - type: input
+    id: mod-version
+    attributes:
+      label: QuickShulker-Multi 版本
+      description: 出现 bug 的 QuickShulker-Multi 版本
+      placeholder: 3.2.1
+    validations:
+      required: true
+  - type: textarea
+    id: other-information
+    attributes:
+      label: 其他信息
+      description: 其他有助于完善此错误报告的信息，例如其他相关的模组版本。如果没有相关信息，请留空。
+      placeholder: 仅当玩家处于生存模式时才会出现此问题
+  - type: checkboxes
+    id: check-list
+    attributes:
+      label: 检查清单
+      options:
+        - label: 我已经确认该问题在最新版本的 mod 中仍然存在。
+          required: true
+        - label: 我搜索了现有问题并确认这不是重复的。
+          required: true
