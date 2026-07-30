@@ -1,6 +1,6 @@
 package semmiedev.disc_jockey.gui.screen;
 
-import me.shedaniel.autoconfig.AutoConfig;
+import me.shedaniel.autoconfig.AutoConfigClient;
 import net.minecraft.client.gui.components.*;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.GuiGraphics;
@@ -172,7 +172,7 @@ public class DiscJockeyScreen extends Screen {
         addRenderableWidget(stopButton);
 
         // Config button in bottom left
-        configButton = Button.builder(CONFIG, (button) -> minecraft.setScreen(AutoConfig.getConfigScreen(Config.class, this).get()))
+        configButton = Button.builder(CONFIG, (button) -> minecraft.setScreen(AutoConfigClient.getConfigScreen(Config.class, this).get()))
                 .pos(10, height - 30)
                 .size(100, 20)
                 .build();
