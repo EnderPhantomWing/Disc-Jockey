@@ -1,4 +1,4 @@
-name: _step.build
+name: Build
 on:
   push:
   pull_request:
@@ -7,48 +7,30 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: ${{ !contains(github.event.head_commit.message, 'SKIP') }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
 
-      - name: Setup Java 25
+      - name: Validate gradle wrapper
+        uses: gradle/actions/wrapper-validation@v4
+
+      - name: Setup JDK
         uses: actions/setup-java@v5
         with:
+          java-version: '21'
           distribution: 'liberica'
-          java-version: '25'
 
-      - name: Cache Gradle dependencies
-        id: gradle-cache
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-            ./.gradle
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-common
-            ${{ runner.os }}-gradle-
+      - name: Get latest short hash
+        run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
-      - name: Download dependencies
-        if: |
-          inputs.download_dependencies == true || 
-          steps.gradle-cache.outputs.cache-hit != 'true' ||
-          contains(github.event.head_commit.message, 'DEPS')
-        run: ./gradlew dependencies --stacktrace
-
       - name: Build
-        run: |
-          ./gradlew build --stacktrace
+        run: ./gradlew build
 
-      - name: Upload artifacts
+      - name: Capture build artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: build-artifacts
+          name: Disc-Jockey-${{ env.COMMIT_HASH }}
           path: build/libs/
