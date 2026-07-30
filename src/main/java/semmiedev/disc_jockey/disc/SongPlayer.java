@@ -1,4 +1,4 @@
-package semmiedev.disc_jockey;
+package semmiedev.disc_jockey.disc;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
@@ -15,6 +15,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import semmiedev.disc_jockey.DiscJockey;
+import semmiedev.disc_jockey.utils.Util;
 
 public class SongPlayer implements ClientTickEvents.StartWorldTick {
     private static boolean warned;
@@ -35,11 +37,11 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
     public final Tuner tuner = new Tuner();
 
     public SongPlayer() {
-        Main.TICK_LISTENERS.add(this);
+        DiscJockey.TICK_LISTENERS.add(this);
     }
 
     public synchronized void startPlaybackThread() {
-        if(Main.config.disableAsyncPlayback) {
+        if(DiscJockey.config.disableAsyncPlayback) {
             playbackThread = null;
             return;
         }
@@ -62,7 +64,7 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
     }
 
     public synchronized void start(Song song) {
-        if (!Main.config.hideWarning && !warned) {
+        if (!DiscJockey.config.hideWarning && !warned) {
             Minecraft.getInstance().gui.getChat().addMessage(Component.translatable("disc_jockey.warning").withStyle(ChatFormatting.BOLD, ChatFormatting.RED));
             warned = true;
             return;
@@ -109,7 +111,7 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
             GameType gameMode = client.gameMode == null ? null : client.gameMode.getPlayerMode();
             // In the best case, gameMode would only be queried in sync Ticks, no here
             if (gameMode == null || !gameMode.isSurvival()) {
-                client.gui.getChat().addMessage(Component.translatable(Main.MOD_ID+".player.invalid_game_mode", gameMode == null ? "unknown" : gameMode.getLongDisplayName()).withStyle(ChatFormatting.RED));
+                client.gui.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID+".player.invalid_game_mode", gameMode == null ? "unknown" : gameMode.getLongDisplayName()).withStyle(ChatFormatting.RED));
                 stop();
                 return;
             }
@@ -124,7 +126,7 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
                 }
                 if (!Util.canInteractWith(client.player, blockPos)) {
                     stop();
-                    client.gui.getChat().addMessage(Component.translatable(Main.MOD_ID+".player.too_far").withStyle(ChatFormatting.RED));
+                    client.gui.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID+".player.too_far").withStyle(ChatFormatting.RED));
                     return;
                 }
                 Vec3 unit = Vec3.upFromBottomCenterOf(blockPos, 0.5).subtract(client.player.getEyePosition()).normalize();
@@ -179,18 +181,18 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
             if (!tuner.selectSong(client, song)) {
                 if(!tuner.getMissingInstrumentBlocks().isEmpty()) {
                     ChatComponent chatHud = Minecraft.getInstance().gui.getChat();
-                    chatHud.addMessage(Component.translatable(Main.MOD_ID + ".player.invalid_note_blocks").withStyle(ChatFormatting.RED));
+                    chatHud.addMessage(Component.translatable(DiscJockey.MOD_ID + ".player.invalid_note_blocks").withStyle(ChatFormatting.RED));
                     tuner.getMissingInstrumentBlocks().forEach((block, integer) -> chatHud.addMessage(Component.literal(block.getName().getString() + " × " + integer).withStyle(ChatFormatting.RED)));
                     stop();
                     return;
                 }else {
-                    Main.LOGGER.error("Failed to select song to unknown / unexpected reason!");
-                    client.gui.getChat().addMessage(Component.translatable(Main.MOD_ID + ".selectsong_fail_unknown").withStyle(ChatFormatting.RED));
+                    DiscJockey.LOGGER.error("Failed to select song to unknown / unexpected reason!");
+                    client.gui.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID + ".selectsong_fail_unknown").withStyle(ChatFormatting.RED));
                     stop();
                     return;
                 }
             }else {
-                Main.LOGGER.info("Selected song: " + song.displayName + " (" + song.fileName + ")");
+                DiscJockey.LOGGER.info("Selected song: " + song.displayName + " (" + song.fileName + ")");
             }
         }
 
@@ -199,22 +201,22 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
             Tuner.TuningFail tuningFail = tuner.tickTuning(client);
             if (tuningFail == Tuner.TuningFail.MovedTooFarAway) {
                 stop();
-                client.gui.getChat().addMessage(Component.translatable(Main.MOD_ID + ".player.too_far").withStyle(ChatFormatting.RED));
+                client.gui.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID + ".player.too_far").withStyle(ChatFormatting.RED));
                 return;
             } else if(tuningFail != null) {
                 stop();
-                Main.LOGGER.error("Tuning song failed: " + tuningFail.name());
-                client.gui.getChat().addMessage(Component.translatable(Main.MOD_ID + ".player.tuning_fail_other", tuningFail.name()).withStyle(ChatFormatting.RED));
+                DiscJockey.LOGGER.error("Tuning song failed: " + tuningFail.name());
+                client.gui.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID + ".player.tuning_fail_other", tuningFail.name()).withStyle(ChatFormatting.RED));
                 return;
             }
         }
 
-        if(tuner.isTuned() && (playbackThread == null || !playbackThread.isAlive()) && running && Main.config.disableAsyncPlayback) {
+        if(tuner.isTuned() && (playbackThread == null || !playbackThread.isAlive()) && running && DiscJockey.config.disableAsyncPlayback) {
             // Sync playback (off by default). Replacement for playback thread
             try {
                 tickPlayback();
             }catch (Exception ex) {
-                Main.LOGGER.error("Failed to tick playback synchronously!", ex);
+                DiscJockey.LOGGER.error("Failed to tick playback synchronously!", ex);
                 stop();
             }
         }

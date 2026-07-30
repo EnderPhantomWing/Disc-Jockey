@@ -1,10 +1,11 @@
-package semmiedev.disc_jockey;
+package semmiedev.disc_jockey.disc;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.Vec3;
+import semmiedev.disc_jockey.DiscJockey;
 
 public class Previewer implements ClientTickEvents.StartWorldTick {
     public boolean running;
@@ -15,12 +16,12 @@ public class Previewer implements ClientTickEvents.StartWorldTick {
 
     public void start(Song song) {
         this.song = song;
-        Main.TICK_LISTENERS.add(this);
+        DiscJockey.TICK_LISTENERS.add(this);
         running = true;
     }
 
     public void stop() {
-        Minecraft.getInstance().schedule(() -> Main.TICK_LISTENERS.remove(this));
+        Minecraft.getInstance().schedule(() -> DiscJockey.TICK_LISTENERS.remove(this));
         running = false;
         i = 0;
         tick = 0;

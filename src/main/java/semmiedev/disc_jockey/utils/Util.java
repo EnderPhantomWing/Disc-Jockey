@@ -1,10 +1,12 @@
-package semmiedev.disc_jockey;
+package semmiedev.disc_jockey.utils;
 
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.NotImplementedException;
+import semmiedev.disc_jockey.DiscJockey;
+import semmiedev.disc_jockey.config.Config;
 
 public class Util {
 
@@ -22,18 +24,18 @@ public class Util {
         if(player == null) return false;
 
         final Vec3 eyePos = player.getEyePosition();
-        if(Main.config.expectedServerVersion == Config.ExpectedServerVersion.v1_20_4_Or_Earlier) {
+        if(DiscJockey.config.expectedServerVersion == Config.ExpectedServerVersion.v1_20_4_Or_Earlier) {
             return eyePos.distanceToSqr(blockPos.getCenter()) <= 6.0 * 6.0;
-        }else if(Main.config.expectedServerVersion == Config.ExpectedServerVersion.v1_20_5_Or_Later) {
+        }else if(DiscJockey.config.expectedServerVersion == Config.ExpectedServerVersion.v1_20_5_Or_Later) {
             double blockInteractRange = player.blockInteractionRange() + 1.0;
             return new AABB(blockPos).distanceToSqr(eyePos) < blockInteractRange * blockInteractRange;
-        }else if(Main.config.expectedServerVersion == Config.ExpectedServerVersion.All) {
+        }else if(DiscJockey.config.expectedServerVersion == Config.ExpectedServerVersion.All) {
             // Require both checks to succeed (aka use worst distance)
             double blockInteractRange = player.blockInteractionRange() + 1.0;
             return eyePos.distanceToSqr(blockPos.getCenter()) <= 6.0 * 6.0
                     && new AABB(blockPos).distanceToSqr(eyePos) < blockInteractRange * blockInteractRange;
         }else {
-            throw new NotImplementedException("ExpectedServerVersion Value not implemented: " + Main.config.expectedServerVersion.name());
+            throw new NotImplementedException("ExpectedServerVersion Value not implemented: " + DiscJockey.config.expectedServerVersion.name());
         }
     }
 

@@ -1,4 +1,4 @@
-package semmiedev.disc_jockey;
+package semmiedev.disc_jockey.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
@@ -10,6 +10,9 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import org.jetbrains.annotations.Nullable;
+import semmiedev.disc_jockey.DiscJockey;
+import semmiedev.disc_jockey.disc.Song;
+import semmiedev.disc_jockey.disc.SongLoader;
 import semmiedev.disc_jockey.gui.screen.DiscJockeyScreen;
 
 import java.util.*;
@@ -44,7 +47,7 @@ public class DiscjockeyCommand {
                         .then(literal("reload")
                                 .executes(context -> {
                                     if (!isLoading(context)) {
-                                        context.getSource().sendFeedback(Component.translatable(Main.MOD_ID+".reloading"));
+                                        context.getSource().sendFeedback(Component.translatable(DiscJockey.MOD_ID+".reloading"));
                                         SongLoader.loadSongs();
                                         return 1;
                                     }
@@ -59,10 +62,10 @@ public class DiscjockeyCommand {
                                                 String songName = StringArgumentType.getString(context, "song");
                                                 Optional<Song> song = SongLoader.SONGS.stream().filter(input -> input.displayName.equals(songName)).findAny();
                                                 if (song.isPresent()) {
-                                                    Main.SONG_PLAYER.start(song.get());
+                                                    DiscJockey.SONG_PLAYER.start(song.get());
                                                     return 1;
                                                 }
-                                                context.getSource().sendError(Component.translatable(Main.MOD_ID+".song_not_found", songName));
+                                                context.getSource().sendError(Component.translatable(DiscJockey.MOD_ID+".song_not_found", songName));
                                                 return 0;
                                             }
                                             return 0;
@@ -73,23 +76,23 @@ public class DiscjockeyCommand {
                                 .executes(context -> {
                                     if (isLoading(context)) return 0;
                                     if (SongLoader.SONGS.isEmpty()) {
-                                        context.getSource().sendError(Component.translatable(Main.MOD_ID + ".no_songs"));
+                                        context.getSource().sendError(Component.translatable(DiscJockey.MOD_ID + ".no_songs"));
                                         return 0;
                                     }
 
                                     Song song = SongLoader.SONGS.get(new Random().nextInt(SongLoader.SONGS.size()));
-                                    Main.SONG_PLAYER.start(song);
+                                    DiscJockey.SONG_PLAYER.start(song);
                                     return 0;
                                 })
                         )
                         .then(literal("stop")
                                 .executes(context -> {
-                                    if (Main.SONG_PLAYER.running) {
-                                        Main.SONG_PLAYER.stop();
-                                        context.getSource().sendFeedback(Component.translatable(Main.MOD_ID+".stopped_playing", Main.SONG_PLAYER.song.displayName));
+                                    if (DiscJockey.SONG_PLAYER.running) {
+                                        DiscJockey.SONG_PLAYER.stop();
+                                        context.getSource().sendFeedback(Component.translatable(DiscJockey.MOD_ID+".stopped_playing", DiscJockey.SONG_PLAYER.song.displayName));
                                         return 1;
                                     }
-                                    context.getSource().sendError(Component.translatable(Main.MOD_ID+".not_playing"));
+                                    context.getSource().sendError(Component.translatable(DiscJockey.MOD_ID+".not_playing"));
                                     return 0;
                                 })
                         )
@@ -97,8 +100,8 @@ public class DiscjockeyCommand {
                                 .then(argument("speed", FloatArgumentType.floatArg(0.0001F, 15.0F))
                                         .suggests((context, builder) -> SharedSuggestionProvider.suggest(Arrays.asList("0.5", "0.75", "1", "1.25", "1.5", "2"), builder))
                                         .executes(context -> {
-                                            Main.SONG_PLAYER.speed = FloatArgumentType.getFloat(context, "speed");
-                                            context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".speed_changed", Main.SONG_PLAYER.speed));
+                                            DiscJockey.SONG_PLAYER.speed = FloatArgumentType.getFloat(context, "speed");
+                                            context.getSource().sendFeedback(Component.translatable(DiscJockey.MOD_ID + ".speed_changed", DiscJockey.SONG_PLAYER.speed));
                                             return 0;
                                         })
                                 )
@@ -106,25 +109,25 @@ public class DiscjockeyCommand {
                         .then(literal("info")
                                 .executes(context -> {
 
-                                    if (!Main.SONG_PLAYER.running) {
-                                        context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".info_not_running", Main.SONG_PLAYER.speed));
+                                    if (!DiscJockey.SONG_PLAYER.running) {
+                                        context.getSource().sendFeedback(Component.translatable(DiscJockey.MOD_ID + ".info_not_running", DiscJockey.SONG_PLAYER.speed));
                                         return 0;
                                     }
-                                    if (!Main.SONG_PLAYER.tuner.isTuned()) {
-                                        context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".info_tuning", Main.SONG_PLAYER.song.displayName, Main.SONG_PLAYER.speed));
+                                    if (!DiscJockey.SONG_PLAYER.tuner.isTuned()) {
+                                        context.getSource().sendFeedback(Component.translatable(DiscJockey.MOD_ID + ".info_tuning", DiscJockey.SONG_PLAYER.song.displayName, DiscJockey.SONG_PLAYER.speed));
                                         return 0;
-                                    } else if(!Main.SONG_PLAYER.didSongReachEnd) {
-                                        context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".info_playing", formatTimestamp((int) Main.SONG_PLAYER.getSongElapsedSeconds()), formatTimestamp((int) Main.SONG_PLAYER.song.getLengthInSeconds()), Main.SONG_PLAYER.song.displayName, Main.SONG_PLAYER.speed));
+                                    } else if(!DiscJockey.SONG_PLAYER.didSongReachEnd) {
+                                        context.getSource().sendFeedback(Component.translatable(DiscJockey.MOD_ID + ".info_playing", formatTimestamp((int) DiscJockey.SONG_PLAYER.getSongElapsedSeconds()), formatTimestamp((int) DiscJockey.SONG_PLAYER.song.getLengthInSeconds()), DiscJockey.SONG_PLAYER.song.displayName, DiscJockey.SONG_PLAYER.speed));
                                         return 0;
                                     } else {
-                                        context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".info_finished", Main.SONG_PLAYER.song != null ? Main.SONG_PLAYER.song.displayName : "???", Main.SONG_PLAYER.speed));
+                                        context.getSource().sendFeedback(Component.translatable(DiscJockey.MOD_ID + ".info_finished", DiscJockey.SONG_PLAYER.song != null ? DiscJockey.SONG_PLAYER.song.displayName : "???", DiscJockey.SONG_PLAYER.speed));
                                         return 0;
                                     }
                                 })
                         )
                         .then(literal("remapInstruments")
                                 .executes(context -> {
-                                    context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".instrument_info"));
+                                    context.getSource().sendFeedback(Component.translatable(DiscJockey.MOD_ID + ".instrument_info"));
                                     return 0;
                                 })
                                 .then(literal("map")
@@ -146,12 +149,12 @@ public class DiscjockeyCommand {
                                                             }
 
                                                             if (originalInstrument == null && !originalInstrumentStr.equalsIgnoreCase("all")) {
-                                                                context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".invalid_instrument", originalInstrumentStr));
+                                                                context.getSource().sendFeedback(Component.translatable(DiscJockey.MOD_ID + ".invalid_instrument", originalInstrumentStr));
                                                                 return 0;
                                                             }
 
                                                             if (newInstrument == null && !newInstrumentStr.equalsIgnoreCase("nothing")) {
-                                                                context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".invalid_instrument", newInstrumentStr));
+                                                                context.getSource().sendFeedback(Component.translatable(DiscJockey.MOD_ID + ".invalid_instrument", newInstrumentStr));
                                                                 return 0;
                                                             }
 
@@ -161,12 +164,12 @@ public class DiscjockeyCommand {
                                                             if (originalInstrument == null) {
                                                                 // All instruments
                                                                 for(NoteBlockInstrument instrument : NoteBlockInstrument.values()) {
-                                                                    Main.SONG_PLAYER.tuner.instrumentMap.put(instrument, newInstrument);
+                                                                    DiscJockey.SONG_PLAYER.tuner.instrumentMap.put(instrument, newInstrument);
                                                                 }
-                                                                context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".instrument_mapped_all", newInstrumentStr.toLowerCase()));
+                                                                context.getSource().sendFeedback(Component.translatable(DiscJockey.MOD_ID + ".instrument_mapped_all", newInstrumentStr.toLowerCase()));
                                                             } else {
-                                                                Main.SONG_PLAYER.tuner.instrumentMap.put(originalInstrument, newInstrument);
-                                                                context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".instrument_mapped", originalInstrumentStr.toLowerCase(), newInstrumentStr.toLowerCase()));
+                                                                DiscJockey.SONG_PLAYER.tuner.instrumentMap.put(originalInstrument, newInstrument);
+                                                                context.getSource().sendFeedback(Component.translatable(DiscJockey.MOD_ID + ".instrument_mapped", originalInstrumentStr.toLowerCase(), newInstrumentStr.toLowerCase()));
                                                             }
                                                             return 1;
                                                         })
@@ -188,39 +191,39 @@ public class DiscjockeyCommand {
                                                     }
 
                                                     if (instrument == null) {
-                                                        context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".invalid_instrument", instrumentStr));
+                                                        context.getSource().sendFeedback(Component.translatable(DiscJockey.MOD_ID + ".invalid_instrument", instrumentStr));
                                                         return 0;
                                                     }
 
-                                                    Main.SONG_PLAYER.tuner.instrumentMap.remove(instrument);
-                                                    context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".instrument_unmapped", instrumentStr.toLowerCase()));
+                                                    DiscJockey.SONG_PLAYER.tuner.instrumentMap.remove(instrument);
+                                                    context.getSource().sendFeedback(Component.translatable(DiscJockey.MOD_ID + ".instrument_unmapped", instrumentStr.toLowerCase()));
                                                     return 1;
                                                 })
                                         )
                                 )
                                 .then(literal("show")
                                         .executes(context -> {
-                                            if (Main.SONG_PLAYER.tuner.instrumentMap.isEmpty()) {
-                                                context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".no_mapped_instruments"));
+                                            if (DiscJockey.SONG_PLAYER.tuner.instrumentMap.isEmpty()) {
+                                                context.getSource().sendFeedback(Component.translatable(DiscJockey.MOD_ID + ".no_mapped_instruments"));
                                                 return 1;
                                             }
 
                                             StringBuilder maps = new StringBuilder();
-                                            for (Map.Entry<NoteBlockInstrument, NoteBlockInstrument> entry : Main.SONG_PLAYER.tuner.instrumentMap.entrySet()) {
+                                            for (Map.Entry<NoteBlockInstrument, NoteBlockInstrument> entry : DiscJockey.SONG_PLAYER.tuner.instrumentMap.entrySet()) {
                                                 if (!maps.isEmpty()) maps.append(", ");
                                                 maps
                                                         .append(entry.getKey().toString().toLowerCase())
                                                         .append("->")
                                                         .append(entry.getValue() == null ? "nothing" : entry.getValue().toString().toLowerCase());
                                             }
-                                            context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".mapped_instruments", maps.toString()));
+                                            context.getSource().sendFeedback(Component.translatable(DiscJockey.MOD_ID + ".mapped_instruments", maps.toString()));
                                             return 1;
                                         })
                                 )
                                 .then(literal("clear")
                                         .executes(context -> {
-                                            Main.SONG_PLAYER.tuner.instrumentMap.clear();
-                                            context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".instrument_maps_cleared"));
+                                            DiscJockey.SONG_PLAYER.tuner.instrumentMap.clear();
+                                            context.getSource().sendFeedback(Component.translatable(DiscJockey.MOD_ID + ".instrument_maps_cleared"));
                                             return 1;
                                         })
                                 )
@@ -228,19 +231,19 @@ public class DiscjockeyCommand {
 
                         .then(literal("loop")
                                 .executes(context -> {
-                                    context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".loop_status", Main.SONG_PLAYER.loopSong ? "yes" : "no"));
+                                    context.getSource().sendFeedback(Component.translatable(DiscJockey.MOD_ID + ".loop_status", DiscJockey.SONG_PLAYER.loopSong ? "yes" : "no"));
                                     return 1;
                                 })
                                 .then(literal("yes")
                                         .executes(context -> {
-                                            Main.SONG_PLAYER.loopSong = true;
-                                            context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".loop_enabled"));
+                                            DiscJockey.SONG_PLAYER.loopSong = true;
+                                            context.getSource().sendFeedback(Component.translatable(DiscJockey.MOD_ID + ".loop_enabled"));
                                             return 1;
                                         }))
                                 .then(literal("no")
                                         .executes(context -> {
-                                            Main.SONG_PLAYER.loopSong = false;
-                                            context.getSource().sendFeedback(Component.translatable(Main.MOD_ID + ".loop_disabled"));
+                                            DiscJockey.SONG_PLAYER.loopSong = false;
+                                            context.getSource().sendFeedback(Component.translatable(DiscJockey.MOD_ID + ".loop_disabled"));
                                             return 1;
                                         }))
                         )
@@ -249,7 +252,7 @@ public class DiscjockeyCommand {
 
     private static boolean isLoading(CommandContext<FabricClientCommandSource> context) {
         if (SongLoader.loadingSongs) {
-            context.getSource().sendError(Component.translatable(Main.MOD_ID + ".still_loading"));
+            context.getSource().sendError(Component.translatable(DiscJockey.MOD_ID + ".still_loading"));
             SongLoader.showToast = true;
             return true;
         }

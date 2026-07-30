@@ -20,10 +20,10 @@
   "environment": "client",
   "entrypoints": {
     "client": [
-      "semmiedev.disc_jockey.Main"
+      "semmiedev.disc_jockey.DiscJockey"
     ],
     "modmenu": [
-      "semmiedev.disc_jockey.ModMenuIntegration"
+      "semmiedev.disc_jockey.compat.modmenu.ModMenuIntegration"
     ]
   },
   "accessWidener": "disc_jockey.accesswidener",

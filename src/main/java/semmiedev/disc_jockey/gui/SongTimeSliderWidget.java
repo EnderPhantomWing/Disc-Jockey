@@ -2,7 +2,7 @@ package semmiedev.disc_jockey.gui;
 
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.network.chat.Component;
-import semmiedev.disc_jockey.Main;
+import semmiedev.disc_jockey.DiscJockey;
 
 public class SongTimeSliderWidget extends AbstractSliderButton {
 
@@ -23,24 +23,24 @@ public class SongTimeSliderWidget extends AbstractSliderButton {
 
     @Override
     protected void updateMessage() {
-        if(Main.SONG_PLAYER.song == null)
+        if(DiscJockey.SONG_PLAYER.song == null)
             setMessage(Component.empty());
         else
-            setMessage(Component.literal(formatTimestamp((int) Main.SONG_PLAYER.getSongElapsedSeconds()) + " / " + formatTimestamp((int) Main.SONG_PLAYER.song.getLengthInSeconds())));
+            setMessage(Component.literal(formatTimestamp((int) DiscJockey.SONG_PLAYER.getSongElapsedSeconds()) + " / " + formatTimestamp((int) DiscJockey.SONG_PLAYER.song.getLengthInSeconds())));
     }
 
     @Override
     protected void applyValue() {
-        if(Main.SONG_PLAYER.song == null) return;
-        double total = Main.SONG_PLAYER.song.getLengthInSeconds();
+        if(DiscJockey.SONG_PLAYER.song == null) return;
+        double total = DiscJockey.SONG_PLAYER.song.getLengthInSeconds();
         double seconds = value * total;
-        Main.SONG_PLAYER.setSongElapsedSeconds(seconds);
+        DiscJockey.SONG_PLAYER.setSongElapsedSeconds(seconds);
     }
 
     public void update() {
-        if(Main.SONG_PLAYER.song == null) return;
-        double elapsed = Main.SONG_PLAYER.getSongElapsedSeconds();
-        double total = Main.SONG_PLAYER.song == null ? 1 : Main.SONG_PLAYER.song.getLengthInSeconds();
+        if(DiscJockey.SONG_PLAYER.song == null) return;
+        double elapsed = DiscJockey.SONG_PLAYER.getSongElapsedSeconds();
+        double total = DiscJockey.SONG_PLAYER.song == null ? 1 : DiscJockey.SONG_PLAYER.song.getLengthInSeconds();
         value = elapsed / total;
         updateMessage();
     }

@@ -3,7 +3,16 @@ plugins {
     id 'maven-publish'
 }
 
-version = project.mod_version
+def getModVersion = { ->
+    version = project.mod_version
+    Provider<String> output = providers.exec {
+        commandLine('git', 'rev-list', '--count', 'HEAD')
+    }.standardOutput.asText
+
+    return version + "." + output.get().trim().toString()
+}
+
+version = getModVersion()
 group = project.maven_group
 
 repositories {

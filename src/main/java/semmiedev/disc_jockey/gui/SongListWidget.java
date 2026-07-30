@@ -1,7 +1,6 @@
 package semmiedev.disc_jockey.gui;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.AbstractSelectionList.Entry;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.GuiGraphics;
@@ -10,9 +9,9 @@ import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
-import semmiedev.disc_jockey.Main;
-import semmiedev.disc_jockey.Song;
-import semmiedev.disc_jockey.Util;
+import semmiedev.disc_jockey.DiscJockey;
+import semmiedev.disc_jockey.disc.Song;
+import semmiedev.disc_jockey.utils.Util;
 import semmiedev.disc_jockey.mixin.AbstractSelectionListAccessor;
 
 public class SongListWidget extends AbstractSelectionList<SongListWidget.SongEntry> {
@@ -62,7 +61,7 @@ public class SongListWidget extends AbstractSelectionList<SongListWidget.SongEnt
     }
 
     public static class SongEntry extends Entry<SongEntry> {
-        private static final Identifier ICONS = Identifier.fromNamespaceAndPath(Main.MOD_ID, "textures/gui/icons.png");
+        private static final Identifier ICONS = Identifier.fromNamespaceAndPath(DiscJockey.MOD_ID, "textures/gui/icons.png");
 
         public final int index;
         public final Song song;
@@ -107,16 +106,16 @@ public class SongListWidget extends AbstractSelectionList<SongListWidget.SongEnt
             if (isOverFavoriteButton(mouseX, mouseY)) {
                 favorite = !favorite;
                 if (favorite) {
-                    Main.config.favorites.add(song.fileName);
+                    DiscJockey.config.favorites.add(song.fileName);
                 } else {
-                    Main.config.favorites.remove(song.fileName);
+                    DiscJockey.config.favorites.remove(song.fileName);
                 }
                 return true;
             }
 
             if(songListWidget.getSelected() == this && lastClickedAt != -1L && Util.now() - lastClickedAt <= 350) {
                 // Double click = start song
-                Main.SONG_PLAYER.start(this.song);
+                DiscJockey.SONG_PLAYER.start(this.song);
             }else {
                 songListWidget.setSelected(this);
                 lastClickedAt = Util.now();

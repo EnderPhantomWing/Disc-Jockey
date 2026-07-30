@@ -1,4 +1,4 @@
-package semmiedev.disc_jockey;
+package semmiedev.disc_jockey.disc;
 
 import java.io.EOFException;
 import java.io.IOException;

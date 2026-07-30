@@ -1,4 +1,7 @@
-package semmiedev.disc_jockey;
+package semmiedev.disc_jockey.disc;
+
+import semmiedev.disc_jockey.DiscJockey;
+import semmiedev.disc_jockey.utils.Util;
 
 public class RateLimiter {
     // Used to check and enforce packet rate limits to not get kicked
@@ -24,11 +27,11 @@ public class RateLimiter {
     }
 
     public int getMaxCosmeticPacketsPer100ms() {
-        return Main.config.playbackPacketRatelimit.getReducePacketsPer100Millis();
+        return DiscJockey.config.playbackPacketRatelimit.getReducePacketsPer100Millis();
     }
 
     public int getMaxPacketsPer100ms() {
-        return Main.config.playbackPacketRatelimit.getMaxPacketsPer100Millis();
+        return DiscJockey.config.playbackPacketRatelimit.getMaxPacketsPer100Millis();
     }
 
     /**
@@ -66,7 +69,7 @@ public class RateLimiter {
             reducePacketsUntil = Math.max(reducePacketsUntil, Util.now() + 500);
         }
         if(last100MsSpanEstimatedPackets >= getMaxPacketsPer100ms()) {
-            Main.LOGGER.warn("Stopping all packets for a bit!");
+            DiscJockey.LOGGER.warn("Stopping all packets for a bit!");
             final long now = Util.now();
             stopPacketsUntil = Math.max(stopPacketsUntil, now + 250);
             reducePacketsUntil = Math.max(reducePacketsUntil, now + 10000);

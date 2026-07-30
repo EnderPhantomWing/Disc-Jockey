@@ -11,6 +11,10 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
 import semmiedev.disc_jockey.*;
+import semmiedev.disc_jockey.config.Config;
+import semmiedev.disc_jockey.disc.Note;
+import semmiedev.disc_jockey.disc.Song;
+import semmiedev.disc_jockey.disc.SongLoader;
 import semmiedev.disc_jockey.gui.SongListWidget;
 import semmiedev.disc_jockey.gui.SongTimeSliderWidget;
 import semmiedev.disc_jockey.gui.hud.BlocksOverlay;
@@ -25,19 +29,19 @@ import java.util.stream.Collectors;
 
 public class DiscJockeyScreen extends Screen {
     private static final MutableComponent
-            SELECT_SONG = Component.translatable(Main.MOD_ID+".screen.select_song"),
-            PLAY = Component.translatable(Main.MOD_ID+".screen.play"),
-            PLAY_STOP = Component.translatable(Main.MOD_ID+".screen.play.stop"),
-            PREVIEW = Component.translatable(Main.MOD_ID+".screen.preview"),
-            PREVIEW_STOP = Component.translatable(Main.MOD_ID+".screen.preview.stop"),
-            DROP_HINT = Component.translatable(Main.MOD_ID+".screen.drop_hint").withStyle(ChatFormatting.GRAY),
-            SONGSTATE_PLAYING = Component.translatable(Main.MOD_ID+".screen.songstate.playing").withStyle((style) -> style.withItalic(true).withColor(0xDDDDDD)),
-            SONGSTATE_PAUSED = Component.translatable(Main.MOD_ID+".screen.songstate.paused").withStyle((style) -> style.withItalic(true).withColor(0xDDDDDD)),
-            SONGSTATE_FINISHED = Component.translatable(Main.MOD_ID+".screen.songstate.finished").withStyle((style) -> style.withItalic(true).withColor(0xDDDDDD)),
-            SONGSTATE_STOPPED = Component.translatable(Main.MOD_ID+".screen.songstate.stopped").withStyle((style) -> style.withItalic(true).withColor(0xDDDDDD)),
-            SONGSTATE_TUNING = Component.translatable(Main.MOD_ID+".screen.songstate.tuning").withStyle((style) -> style.withItalic(true).withColor(0xDDDDDD)),
-            PLEASE_SELECT_SONG = Component.translatable(Main.MOD_ID+".screen.please_select_song").withStyle((style) -> style.withItalic(true)),
-            CONFIG = Component.translatable(Main.MOD_ID+".screen.config")
+            SELECT_SONG = Component.translatable(DiscJockey.MOD_ID+".screen.select_song"),
+            PLAY = Component.translatable(DiscJockey.MOD_ID+".screen.play"),
+            PLAY_STOP = Component.translatable(DiscJockey.MOD_ID+".screen.play.stop"),
+            PREVIEW = Component.translatable(DiscJockey.MOD_ID+".screen.preview"),
+            PREVIEW_STOP = Component.translatable(DiscJockey.MOD_ID+".screen.preview.stop"),
+            DROP_HINT = Component.translatable(DiscJockey.MOD_ID+".screen.drop_hint").withStyle(ChatFormatting.GRAY),
+            SONGSTATE_PLAYING = Component.translatable(DiscJockey.MOD_ID+".screen.songstate.playing").withStyle((style) -> style.withItalic(true).withColor(0xDDDDDD)),
+            SONGSTATE_PAUSED = Component.translatable(DiscJockey.MOD_ID+".screen.songstate.paused").withStyle((style) -> style.withItalic(true).withColor(0xDDDDDD)),
+            SONGSTATE_FINISHED = Component.translatable(DiscJockey.MOD_ID+".screen.songstate.finished").withStyle((style) -> style.withItalic(true).withColor(0xDDDDDD)),
+            SONGSTATE_STOPPED = Component.translatable(DiscJockey.MOD_ID+".screen.songstate.stopped").withStyle((style) -> style.withItalic(true).withColor(0xDDDDDD)),
+            SONGSTATE_TUNING = Component.translatable(DiscJockey.MOD_ID+".screen.songstate.tuning").withStyle((style) -> style.withItalic(true).withColor(0xDDDDDD)),
+            PLEASE_SELECT_SONG = Component.translatable(DiscJockey.MOD_ID+".screen.please_select_song").withStyle((style) -> style.withItalic(true)),
+            CONFIG = Component.translatable(DiscJockey.MOD_ID+".screen.config")
     ;
 
     private StringWidget songTitle;
@@ -53,7 +57,7 @@ public class DiscJockeyScreen extends Screen {
     private String query = "";
 
     public DiscJockeyScreen() {
-        super(Main.NAME);
+        super(DiscJockey.NAME);
     }
 
     @Override
@@ -69,12 +73,12 @@ public class DiscJockeyScreen extends Screen {
         }
 
         playButton = Button.builder(PLAY, button -> {
-            if (Main.SONG_PLAYER.running) {
-                Main.SONG_PLAYER.stop();
+            if (DiscJockey.SONG_PLAYER.running) {
+                DiscJockey.SONG_PLAYER.stop();
             } else {
                 SongListWidget.SongEntry entry = songListWidget.getSelected();
                 if (entry != null) {
-                    Main.SONG_PLAYER.start(entry.song);
+                    DiscJockey.SONG_PLAYER.start(entry.song);
                     //client.setScreen(null);
                 }
             }
@@ -82,16 +86,16 @@ public class DiscJockeyScreen extends Screen {
         addRenderableWidget(playButton);
 
         previewButton = Button.builder(PREVIEW, button -> {
-            if (Main.PREVIEWER.running) {
-                Main.PREVIEWER.stop();
+            if (DiscJockey.PREVIEWER.running) {
+                DiscJockey.PREVIEWER.stop();
             } else {
                 SongListWidget.SongEntry entry = songListWidget.getSelected();
-                if (entry != null) Main.PREVIEWER.start(entry.song);
+                if (entry != null) DiscJockey.PREVIEWER.start(entry.song);
             }
         }).bounds((width / 4 * 3) - 50, height - 61, 100, 20).build();
         addRenderableWidget(previewButton);
 
-        addRenderableWidget(Button.builder(Component.translatable(Main.MOD_ID+".screen.blocks"), button -> {
+        addRenderableWidget(Button.builder(Component.translatable(DiscJockey.MOD_ID+".screen.blocks"), button -> {
             // TODO: 6/2/2022 Add an auto build mode
             if (BlocksOverlay.itemStacks == null) {
                 SongListWidget.SongEntry entry = songListWidget.getSelected();
@@ -131,7 +135,7 @@ public class DiscJockeyScreen extends Screen {
         }).bounds((width / 4 * 3) + 60, height - 61, 100, 20).build());
 
         EditBox searchBar = new EditBox(font, (width / 4 * 3) - 75, height - 31, 150, 20, Component.empty());
-        searchBar.setHint(Component.translatable(Main.MOD_ID+".screen.search").withStyle((style) -> style.withItalic(true).withColor(0xDDDDDD)));
+        searchBar.setHint(Component.translatable(DiscJockey.MOD_ID+".screen.search").withStyle((style) -> style.withItalic(true).withColor(0xDDDDDD)));
         searchBar.setResponder(query -> {
             query = query.toLowerCase().replaceAll("\\s", "");
             if (this.query.equals(query)) return;
@@ -150,18 +154,18 @@ public class DiscJockeyScreen extends Screen {
         addRenderableWidget(songTitle);
         timeBar = new SongTimeSliderWidget(10, 32 + 20 + 20, width / 2 - 20, 30);
         addRenderableWidget(timeBar);
-        playPauseButton = CycleButton.<Boolean>builder((value) -> Component.literal(value ? "⏸" : "▶"), Main.SONG_PLAYER.running)
+        playPauseButton = CycleButton.<Boolean>builder((value) -> Component.literal(value ? "⏸" : "▶"), DiscJockey.SONG_PLAYER.running)
                 .displayOnlyValue()
                 .withValues(true, false)
                 .create((width / 4) - 25, 32 + 20 + 20 + 30 + 5, 20, 20, Component.empty(), (button, value) -> {
-            if(value && Main.SONG_PLAYER.song != null && Main.SONG_PLAYER.didSongReachEnd) {
-                Main.SONG_PLAYER.start(Main.SONG_PLAYER.song); // Restart song
+            if(value && DiscJockey.SONG_PLAYER.song != null && DiscJockey.SONG_PLAYER.didSongReachEnd) {
+                DiscJockey.SONG_PLAYER.start(DiscJockey.SONG_PLAYER.song); // Restart song
             }else {
-                Main.SONG_PLAYER.running = value;
+                DiscJockey.SONG_PLAYER.running = value;
             }
         });
         addRenderableWidget(playPauseButton);
-        stopButton = Button.builder(Component.literal("⏹"), button -> Main.SONG_PLAYER.stop())
+        stopButton = Button.builder(Component.literal("⏹"), button -> DiscJockey.SONG_PLAYER.stop())
                 .pos((width / 4) + 5, 32 + 20 + 20 + 30 + 5)
                 .size(20, 20)
                 .build();
@@ -176,14 +180,14 @@ public class DiscJockeyScreen extends Screen {
     }
 
     private static Component getPlaybackStateText() {
-        boolean running = Main.SONG_PLAYER.running;
-        boolean tuned = Main.SONG_PLAYER.tuner.isTuned();
-        boolean didSongReachEnd = Main.SONG_PLAYER.didSongReachEnd;
+        boolean running = DiscJockey.SONG_PLAYER.running;
+        boolean tuned = DiscJockey.SONG_PLAYER.tuner.isTuned();
+        boolean didSongReachEnd = DiscJockey.SONG_PLAYER.didSongReachEnd;
 
         if(!running) {
             if(didSongReachEnd)
                 return SONGSTATE_FINISHED;
-            else if(Main.SONG_PLAYER.getSongElapsedSeconds() == 0.0)
+            else if(DiscJockey.SONG_PLAYER.getSongElapsedSeconds() == 0.0)
                 return SONGSTATE_STOPPED;
             else
                 return SONGSTATE_PAUSED;
@@ -213,11 +217,11 @@ public class DiscJockeyScreen extends Screen {
     public void tick() {
         songState.setMessage(getPlaybackStateText());
         timeBar.update();
-        playPauseButton.setValue(Main.SONG_PLAYER.running);
-        songTitle.setMessage(Main.SONG_PLAYER.song != null ? Component.literal(Main.SONG_PLAYER.song.displayName) : PLEASE_SELECT_SONG);
+        playPauseButton.setValue(DiscJockey.SONG_PLAYER.running);
+        songTitle.setMessage(DiscJockey.SONG_PLAYER.song != null ? Component.literal(DiscJockey.SONG_PLAYER.song.displayName) : PLEASE_SELECT_SONG);
 
-        previewButton.setMessage(Main.PREVIEWER.running ? PREVIEW_STOP : PREVIEW);
-        playButton.setMessage(Main.SONG_PLAYER.running ? PLAY_STOP : PLAY);
+        previewButton.setMessage(DiscJockey.PREVIEWER.running ? PREVIEW_STOP : PREVIEW);
+        playButton.setMessage(DiscJockey.SONG_PLAYER.running ? PLAY_STOP : PLAY);
 
         if (shouldFilter) {
             shouldFilter = false;
@@ -254,18 +258,18 @@ public class DiscJockeyScreen extends Screen {
 
                         Song song = SongLoader.loadSong(file);
                         if (song != null) {
-                            Files.copy(path, Main.songsFolder.toPath().resolve(file.getName()));
+                            Files.copy(path, DiscJockey.songsFolder.toPath().resolve(file.getName()));
                             SongLoader.SONGS.add(song);
                         }
                     } catch (IOException exception) {
-                        Main.LOGGER.warn("Failed to copy song file from {} to {}", path, Main.songsFolder.toPath(), exception);
+                        DiscJockey.LOGGER.warn("Failed to copy song file from {} to {}", path, DiscJockey.songsFolder.toPath(), exception);
                     }
                 });
 
                 SongLoader.sort();
             }
             minecraft.setScreen(this);
-        }, Component.translatable(Main.MOD_ID+".screen.drop_confirm"), Component.literal(string)));
+        }, Component.translatable(DiscJockey.MOD_ID+".screen.drop_confirm"), Component.literal(string)));
     }
 
     @Override
@@ -276,6 +280,6 @@ public class DiscJockeyScreen extends Screen {
     @Override
     public void onClose() {
         super.onClose();
-        new Thread(() -> Main.configHolder.save()).start();
+        new Thread(() -> DiscJockey.configHolder.save()).start();
     }
 }

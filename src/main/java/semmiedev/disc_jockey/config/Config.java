@@ -1,11 +1,12 @@
-package semmiedev.disc_jockey;
+package semmiedev.disc_jockey.config;
 
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
+import semmiedev.disc_jockey.DiscJockey;
 
 import java.util.ArrayList;
 
-@me.shedaniel.autoconfig.annotation.Config(name = Main.MOD_ID)
+@me.shedaniel.autoconfig.annotation.Config(name = DiscJockey.MOD_ID)
 @me.shedaniel.autoconfig.annotation.Config.Gui.Background("textures/block/note_block.png")
 public class Config implements ConfigData {
     public boolean hideWarning;

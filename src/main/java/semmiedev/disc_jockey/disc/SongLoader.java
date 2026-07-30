@@ -1,8 +1,9 @@
-package semmiedev.disc_jockey;
+package semmiedev.disc_jockey.disc;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.network.chat.Component;
+import semmiedev.disc_jockey.DiscJockey;
 import semmiedev.disc_jockey.gui.SongListWidget;
 
 import java.io.File;
@@ -25,19 +26,19 @@ public class SongLoader {
             SONGS.clear();
             SONG_SUGGESTIONS.clear();
             SONG_SUGGESTIONS.add("Songs are loading, please wait");
-            for (File file : Main.songsFolder.listFiles()) {
+            for (File file : DiscJockey.songsFolder.listFiles()) {
                 Song song = null;
                 try {
                     song = loadSong(file);
                 } catch (Exception exception) {
-                    Main.LOGGER.error("Unable to read or parse song {}", file.getName(), exception);
+                    DiscJockey.LOGGER.error("Unable to read or parse song {}", file.getName(), exception);
                 }
                 if (song != null) SONGS.add(song);
             }
             for (Song song : SONGS) SONG_SUGGESTIONS.add(song.displayName);
-            Main.config.favorites.removeIf(favorite -> SongLoader.SONGS.stream().map(song -> song.fileName).noneMatch(favorite::equals));
+            DiscJockey.config.favorites.removeIf(favorite -> SongLoader.SONGS.stream().map(song -> song.fileName).noneMatch(favorite::equals));
 
-            if (showToast && Minecraft.getInstance().font != null) SystemToast.add(Minecraft.getInstance().getToastManager(), SystemToast.SystemToastId.PACK_LOAD_FAILURE, Main.NAME, Component.translatable(Main.MOD_ID+".loading_done"));
+            if (showToast && Minecraft.getInstance().font != null) SystemToast.add(Minecraft.getInstance().getToastManager(), SystemToast.SystemToastId.PACK_LOAD_FAILURE, DiscJockey.NAME, Component.translatable(DiscJockey.MOD_ID+".loading_done"));
             showToast = true;
             loadingSongs = false;
         }).start();
@@ -83,7 +84,7 @@ public class SongLoader {
 
             song.displayName = song.name.replaceAll("\\s", "").isEmpty() ? song.fileName : song.name+" ("+song.fileName+")";
             song.entry = new SongListWidget.SongEntry(song, SONGS.size());
-            song.entry.favorite = Main.config.favorites.contains(song.fileName);
+            song.entry.favorite = DiscJockey.config.favorites.contains(song.fileName);
             song.searchableFileName = song.fileName.toLowerCase().replaceAll("\\s", "");
             song.searchableName = song.name.toLowerCase().replaceAll("\\s", "");
 

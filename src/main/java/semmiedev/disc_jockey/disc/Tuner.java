@@ -1,4 +1,4 @@
-package semmiedev.disc_jockey;
+package semmiedev.disc_jockey.disc;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -19,6 +19,9 @@ import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import semmiedev.disc_jockey.DiscJockey;
+import semmiedev.disc_jockey.config.Config;
+import semmiedev.disc_jockey.utils.Util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -94,14 +97,14 @@ public class Tuner {
         final Vec3 playerEyePos = player.getEyePosition();
 
         final int maxOffset; // Rough estimates, of which blocks could be in reach
-        if (Main.config.expectedServerVersion == Config.ExpectedServerVersion.v1_20_4_Or_Earlier) {
+        if (DiscJockey.config.expectedServerVersion == Config.ExpectedServerVersion.v1_20_4_Or_Earlier) {
             maxOffset = 7;
-        } else if (Main.config.expectedServerVersion == Config.ExpectedServerVersion.v1_20_5_Or_Later) {
+        } else if (DiscJockey.config.expectedServerVersion == Config.ExpectedServerVersion.v1_20_5_Or_Later) {
             maxOffset = (int) Math.ceil(player.blockInteractionRange() + 1.0 + 1.0);
-        } else if (Main.config.expectedServerVersion == Config.ExpectedServerVersion.All) {
+        } else if (DiscJockey.config.expectedServerVersion == Config.ExpectedServerVersion.All) {
             maxOffset = Math.min(7, (int) Math.ceil(player.blockInteractionRange() + 1.0 + 1.0));
         } else {
-            throw new NotImplementedException("ExpectedServerVersion Value not implemented: " + Main.config.expectedServerVersion.name());
+            throw new NotImplementedException("ExpectedServerVersion Value not implemented: " + DiscJockey.config.expectedServerVersion.name());
         }
         final ArrayList<Integer> orderedOffsets = new ArrayList<>();
         for (int offset = 0; offset <= maxOffset; offset++) {
@@ -201,7 +204,7 @@ public class Tuner {
     private @Nullable NoteBlockInstrument getInstrument(Minecraft client, BlockPos pos, BlockState state) {
         if (!(state.getBlock() instanceof NoteBlock noteBlock)) return null; // Not a noteblock
 
-        if (!Main.config.instrumentDetectionWorkaround) {
+        if (!DiscJockey.config.instrumentDetectionWorkaround) {
             NoteBlockInstrument instrument = state.getValue(BlockStateProperties.NOTEBLOCK_INSTRUMENT);
             if (!instrument.worksAboveNoteBlock() /*Instrument block is below*/ && !client.level.isEmptyBlock(pos.above())) return null; // Blocked off from playing
             return instrument;
@@ -262,7 +265,7 @@ public class Tuner {
         int ping = getOwnPing(client);
 
         // Update availableInteracts based on current tuningSpeed config
-        switch (Main.config.tuningSpeed) {
+        switch (DiscJockey.config.tuningSpeed) {
             case Snail -> availableInteracts = Math.clamp(availableInteracts + 0.5f, 0f, 1f);
             case Safe -> availableInteracts = 1;
             case Spigot -> {
@@ -317,7 +320,7 @@ public class Tuner {
             // Wait roundrip + 100ms before considering tuned after changing notes (in case the server rejects an interact)
             if (lastInteractAt == Util.TIMESTAMP_UNINITIALIZED || Util.now() - lastInteractAt >= ping * 2L + 100) {
                 // Tuning finished, delay a little bit, then officially done!
-                tunedAfter = Util.now() + (long) Math.max(0, Main.config.delayPlaybackStartBySecs) * 1000;
+                tunedAfter = Util.now() + (long) Math.max(0, DiscJockey.config.delayPlaybackStartBySecs) * 1000;
                 tuneInitialUntunedBlocks = -1;
             }
         }

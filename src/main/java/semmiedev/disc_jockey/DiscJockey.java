@@ -20,13 +20,18 @@ import net.minecraft.ChatFormatting;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.glfw.GLFW;
+import semmiedev.disc_jockey.command.DiscjockeyCommand;
+import semmiedev.disc_jockey.config.Config;
+import semmiedev.disc_jockey.disc.Previewer;
+import semmiedev.disc_jockey.disc.SongLoader;
+import semmiedev.disc_jockey.disc.SongPlayer;
 import semmiedev.disc_jockey.gui.hud.BlocksOverlay;
 import semmiedev.disc_jockey.gui.screen.DiscJockeyScreen;
 
 import java.io.File;
 import java.util.ArrayList;
 
-public class Main implements ClientModInitializer {
+public class DiscJockey implements ClientModInitializer {
     public static final String MOD_ID = "disc_jockey";
     public static final MutableComponent NAME = Component.literal("Disc Jockey");
     public static final Logger LOGGER = LogManager.getLogger("Disc Jockey");
@@ -70,7 +75,7 @@ public class Main implements ClientModInitializer {
 
                 if (openScreenKeyBind.consumeClick()) {
                     if (SongLoader.loadingSongs) {
-                        client.gui.getChat().addMessage(Component.translatable(Main.MOD_ID+".still_loading").withStyle(ChatFormatting.RED));
+                        client.gui.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID+".still_loading").withStyle(ChatFormatting.RED));
                         SongLoader.showToast = true;
                     } else {
                         client.setScreen(new DiscJockeyScreen());

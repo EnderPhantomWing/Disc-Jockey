@@ -1,4 +1,4 @@
-package semmiedev.disc_jockey;
+package semmiedev.disc_jockey.disc;
 
 import semmiedev.disc_jockey.gui.SongListWidget;
 
