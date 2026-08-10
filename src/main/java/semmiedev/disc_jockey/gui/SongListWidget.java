@@ -36,6 +36,7 @@ import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 import semmiedev.disc_jockey.DiscJockey;
 import semmiedev.disc_jockey.disc.Song;
 import semmiedev.disc_jockey.utils.Util;
@@ -55,6 +56,7 @@ public class SongListWidget extends AbstractSelectionList<SongListWidget.SongEnt
         this.replaceEntries(entries);
     }
 
+    @SuppressWarnings("unchecked")
     public java.util.List<SongListWidget.SongEntry> getModifiableChildren() {
         return (java.util.List<SongListWidget.SongEntry>) ((AbstractSelectionListAccessor) this).getChildrenList();
     }
@@ -83,7 +85,7 @@ public class SongListWidget extends AbstractSelectionList<SongListWidget.SongEnt
     }
 
     @Override
-    protected void updateWidgetNarration(NarrationElementOutput builder) {
+    protected void updateWidgetNarration(@NonNull NarrationElementOutput builder) {
         // Who cares
     }
 
@@ -105,7 +107,7 @@ public class SongListWidget extends AbstractSelectionList<SongListWidget.SongEnt
         }
 
         @Override
-        public void renderContent(GuiGraphics context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+        public void renderContent(@NonNull GuiGraphics context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
             int x = this.getX();
             int y = this.getY();
             int entryWidth = this.getWidth();

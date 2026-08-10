@@ -145,7 +145,7 @@ public class Tuner {
                     for (int z : orderedOffsets) {
                         Vec3 vec3d = playerEyePos.add(x, y, z);
                         BlockPos blockPos = new BlockPos(Mth.floor(vec3d.x), Mth.floor(vec3d.y), Mth.floor(vec3d.z));
-                        if (!Util.canInteractWith(player, blockPos))
+                        if (Util.canInteractWith(player, blockPos))
                             continue;
                         BlockState blockState = world.getBlockState(blockPos);
                         NoteBlockInstrument blockInstrument = getInstrument(client, blockPos, blockState);
@@ -233,13 +233,17 @@ public class Tuner {
 
         if (!DiscJockey.config.instrumentDetectionWorkaround) {
             NoteBlockInstrument instrument = state.getValue(BlockStateProperties.NOTEBLOCK_INSTRUMENT);
-            if (!instrument.worksAboveNoteBlock() /*Instrument block is below*/ && !client.level.isEmptyBlock(pos.above())) return null; // Blocked off from playing
+            if (!instrument.worksAboveNoteBlock()) {
+                assert client.level != null;
+                if (!client.level.isEmptyBlock(pos.above())) return null; // Blocked off from playing
+            }
             return instrument;
         }
 
         // Workaround for instrument detection:
 
         // Pretty much NoteBlock.getStateWithInstrument, but ignoring blockstates and using default instead:
+        assert client.level != null;
         NoteBlockInstrument aboveBlockInstrument = client.level.getBlockState(pos.above()).getBlock().defaultBlockState().instrument();
         if (aboveBlockInstrument.worksAboveNoteBlock()) {
             return aboveBlockInstrument;
@@ -274,8 +278,11 @@ public class Tuner {
         int ping = 0;
         {
             PlayerInfo playerListEntry;
-            if (client.getConnection() != null && (playerListEntry = client.getConnection().getPlayerInfo(client.player.getGameProfile().id())) != null)
-                ping = playerListEntry.getLatency();
+            if (client.getConnection() != null) {
+                assert client.player != null;
+                if ((playerListEntry = client.getConnection().getPlayerInfo(client.player.getGameProfile().id())) != null)
+                    ping = playerListEntry.getLatency();
+            }
         }
         if (ping <= 0) {
             // Assume server did respond with a placeholder ping
@@ -301,7 +308,7 @@ public class Tuner {
                 } else {
                     // Spigot (and Paper + forks) allow 9 interacts per 300 ms
                     availableInteracts += ((Util.now() - lastInteractAt) / (310.0f / 9.0f));
-                    availableInteracts = Math.min(9f, Math.max(0f, availableInteracts));
+                    availableInteracts = Math.clamp(availableInteracts, 0f, 9f);
                 }
             }
             case Flash -> availableInteracts = Integer.MAX_VALUE;
@@ -324,7 +331,7 @@ public class Tuner {
                 if (assumedNote == note.note() && blockState.getValue(BlockStateProperties.NOTE) == note.note())
                     fullyTunedBlocks++;
                 if (assumedNote != note.note()) {
-                    if (!Util.canInteractWith(client.player, blockPos))
+                    if (Util.canInteractWith(client.player, blockPos))
                         return TuningFail.MovedTooFarAway;
                     untunedNotes.put(blockPos, blockState.getValue(BlockStateProperties.NOTE));
                 }
@@ -339,6 +346,7 @@ public class Tuner {
 
         int existingUniqueNotesCount = 0;
         for (Note n : selectedSong.uniqueNotes) {
+            assert noteBlocks != null;
             if (noteBlocks.get(n.instrument()).get(n.note()) != null)
                 existingUniqueNotesCount++;
         }
@@ -391,7 +399,8 @@ public class Tuner {
             lastTunedNote = untunedNotes.get(blockPos);
             untunedNotes.remove(blockPos);
             int assumedNote = notePredictions.containsKey(blockPos) ? notePredictions.get(blockPos).getA() : client.level.getBlockState(blockPos).getValue(BlockStateProperties.NOTE);
-            notePredictions.put(blockPos, new Tuple<>((assumedNote + 1) % 25, Util.now() + ping * 2 + 100));
+            notePredictions.put(blockPos, new Tuple<>((assumedNote + 1) % 25, Util.now() + ping * 2L + 100));
+            assert client.gameMode != null;
             client.gameMode.useItemOn(client.player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(blockPos), Direction.UP, blockPos, false));
             lastInteractAt = Util.now();
             availableInteracts -= 1f;

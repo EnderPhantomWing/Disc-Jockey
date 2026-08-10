@@ -35,17 +35,13 @@ import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
 import javax.sound.midi.MetaMessage;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 
 public class MidiLoader {
     // Record to hold raw MIDI note data before octave adjustment
-    private static record NoteData(long midiTick, int channel, int originalPitch, int velocity, int program, int bankMSB, int bankLSB) {}
+    private record NoteData(long midiTick, int channel, int originalPitch, int velocity, int program, int bankMSB, int bankLSB) {}
 
     // Maps General MIDI instrument program IDs to Minecraft Note Block instruments.
     private static final Map<Integer, NoteBlockInstrument> INSTRUMENT_MAP = new HashMap<>();
@@ -188,7 +184,7 @@ public class MidiLoader {
         for (int program = 0; program < 128; program++) {
             NoteBlockInstrument instrument = INSTRUMENT_MAP.get(program);
             if (instrument != null) {
-                BANKED_INSTRUMENT_MAP.put((0 << 8) | program, instrument);
+                BANKED_INSTRUMENT_MAP.put((0) | program, instrument);
             }
         }
         // TODO: Add GS/XG extended bank mappings here
@@ -251,7 +247,7 @@ public class MidiLoader {
             }
         }
         // Sort by tick
-        tempoChanges.sort((a, b) -> Long.compare(a.midiTick(), b.midiTick()));
+        tempoChanges.sort(Comparator.comparingLong(Song.TempoChange::midiTick));
         // Remove duplicates (same tick) , keeping the last occurrence.
         Map<Long, Long> uniqueMap = new HashMap<>();
         for (Song.TempoChange tc : tempoChanges) {
@@ -263,7 +259,7 @@ public class MidiLoader {
                 .forEach(e -> tempoChanges.add(new Song.TempoChange(e.getKey(), e.getValue())));
 
         // For backward compatibility, compute average BPM? We'll keep first tempo for now.
-        long mspqn = tempoChanges.get(0).MSpec();
+        long mspqn = tempoChanges.getFirst().MSpec();
         double bpm = 60000000.0 / mspqn;
         short tempo = (short) Math.round((bpm / 60.0) * 10.0 * 100.0); // temporary, will be recalculated later
 
@@ -299,7 +295,7 @@ public class MidiLoader {
         long[] tempoTicks = new long[tempoChanges.size()];
         long[] cumulativeMicros = new long[tempoChanges.size()];
         long lastTick = 0;
-        long lastMspqn = tempoChanges.get(0).MSpec();
+        long lastMspqn = tempoChanges.getFirst().MSpec();
         long cumul = 0;
         for (int idx = 0; idx < tempoChanges.size(); idx++) {
             Song.TempoChange tc = tempoChanges.get(idx);
@@ -496,15 +492,15 @@ public class MidiLoader {
             short layer = 0;
 
             // Encode note data using project's format
-            long noteLong = (long)songTick | (long)layer << 16 | (long)instrumentId << Note.INSTRUMENT_SHIFT | (long)noteId << Note.NOTE_SHIFT;
+            long noteLong = (long) songTick | (long) instrumentId << Note.INSTRUMENT_SHIFT | (long) noteId << Note.NOTE_SHIFT;
             noteLongs.add(noteLong);
         }
 
         // Sort notes by tick
-        noteLongs.sort((n1, n2) -> Integer.compare(getTickFromLong(n1), getTickFromLong(n2)));
+        noteLongs.sort(Comparator.comparingInt(MidiLoader::getTickFromLong));
 
         String name = midiFile.getName().substring(0, midiFile.getName().lastIndexOf('.'));
-        short length = noteLongs.isEmpty() ? 0 : (short) getTickFromLong(noteLongs.get(noteLongs.size() - 1));
+        short length = noteLongs.isEmpty() ? 0 : (short) getTickFromLong(noteLongs.getLast());
 
         // Recalculate tempo based on actual duration (using variable tempo)
         if (maxMidiTick > 0) {

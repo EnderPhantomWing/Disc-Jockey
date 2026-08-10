@@ -37,7 +37,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class SongLoader {
     public static final ArrayList<Song> SONGS = new ArrayList<>();
@@ -52,7 +51,7 @@ public class SongLoader {
             SONGS.clear();
             SONG_SUGGESTIONS.clear();
             SONG_SUGGESTIONS.add("Songs are loading, please wait");
-            List<Song> loadedSongs = Arrays.stream(DiscJockey.songsFolder.listFiles())
+            List<Song> loadedSongs = Arrays.stream(Objects.requireNonNull(DiscJockey.songsFolder.listFiles()))
                     .parallel()
                     .filter(file -> {
                         String fileName = file.getName().toLowerCase();
@@ -68,12 +67,12 @@ public class SongLoader {
                         }
                     })
                     .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
+                    .toList();
             SONGS.addAll(loadedSongs);
             for (Song song : SONGS) SONG_SUGGESTIONS.add(song.displayName);
             DiscJockey.config.favorites.removeIf(favorite -> SongLoader.SONGS.stream().map(song -> song.fileName).noneMatch(favorite::equals));
 
-            if (showToast && Minecraft.getInstance().font != null) SystemToast.add(Minecraft.getInstance().getToastManager(), SystemToast.SystemToastId.PACK_LOAD_FAILURE, DiscJockey.NAME, Component.translatable(DiscJockey.MOD_ID+".loading_done"));
+            if (showToast) SystemToast.add(Minecraft.getInstance().getToastManager(), SystemToast.SystemToastId.PACK_LOAD_FAILURE, DiscJockey.NAME, Component.translatable(DiscJockey.MOD_ID+".loading_done"));
             showToast = true;
             loadingSongs = false;
         }).start();
@@ -102,8 +101,7 @@ public class SongLoader {
                     throw new IOException("Failed to load MIDI file", e);
                 }
             }
-            java.io.InputStream inputStream = Files.newInputStream(file.toPath());
-            try {
+            try (java.io.InputStream inputStream = Files.newInputStream(file.toPath())) {
                 BinaryReader reader = new BinaryReader(inputStream);
                 Song song = new Song();
 
@@ -140,7 +138,7 @@ public class SongLoader {
                     song.loopStartTick = reader.readShort();
                 }
 
-                song.displayName = song.name.replaceAll("\\s", "").isEmpty() ? song.fileName : song.name+" ("+song.fileName+")";
+                song.displayName = song.name.replaceAll("\\s", "").isEmpty() ? song.fileName : song.name + " (" + song.fileName + ")";
                 song.entry = new SongListWidget.SongEntry(song, SONGS.size());
                 song.entry.favorite = DiscJockey.config.favorites.contains(song.fileName);
                 song.searchableFileName = song.fileName.toLowerCase().replaceAll("\\s", "");
@@ -163,7 +161,7 @@ public class SongLoader {
                         layer += jumps;
 
                         byte instrumentId = reader.readByte();
-                        byte noteId = (byte)(reader.readByte() - 33);
+                        byte noteId = (byte) (reader.readByte() - 33);
 
                         if (newFormat) {
                             // Data that is not needed as it only works with commands
@@ -183,15 +181,13 @@ public class SongLoader {
                             song.uniqueNotes.add(note);
                         }
 
-                        long noteLong = tick | layer << Note.LAYER_SHIFT | (long)instrumentId << Note.INSTRUMENT_SHIFT | (long)noteId << Note.NOTE_SHIFT;
+                        long noteLong = tick | layer << Note.LAYER_SHIFT | (long) instrumentId << Note.INSTRUMENT_SHIFT | (long) noteId << Note.NOTE_SHIFT;
                         noteList.add(noteLong);
                     }
                 }
                 song.notes = noteList.stream().mapToLong(Long::longValue).toArray();
 
                 return song;
-            } finally {
-                inputStream.close();
             }
         }
         return null;
@@ -204,7 +200,7 @@ public class SongLoader {
         }
         // 根据文件名找到对应的文件
         File songFile = null;
-        for (File file : DiscJockey.songsFolder.listFiles()) {
+        for (File file : Objects.requireNonNull(DiscJockey.songsFolder.listFiles())) {
             if (file.getName().equals(song.fileName)) {
                 songFile = file;
                 break;

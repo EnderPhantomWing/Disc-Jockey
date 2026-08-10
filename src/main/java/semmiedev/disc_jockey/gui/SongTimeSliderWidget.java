@@ -37,15 +37,15 @@ public class SongTimeSliderWidget extends AbstractSliderButton {
         super(x, y, width, height, Component.empty(), 0);
     }
 
-    private static String padZeroes(int number, int length) {
+    private static String padZeroes(int number) {
         StringBuilder builder = new StringBuilder("" + number);
-        while(builder.length() < length)
+        while(builder.length() < 2)
             builder.insert(0, '0');
         return builder.toString();
     }
 
     private static String formatTimestamp(int seconds) {
-        return padZeroes(seconds / 60, 2) + ":" + padZeroes(seconds % 60, 2);
+        return padZeroes(seconds / 60) + ":" + padZeroes(seconds % 60);
     }
 
     @Override

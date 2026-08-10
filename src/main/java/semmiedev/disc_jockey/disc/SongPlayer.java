@@ -42,10 +42,12 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 import semmiedev.disc_jockey.DiscJockey;
 import semmiedev.disc_jockey.utils.Util;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class SongPlayer implements ClientTickEvents.StartWorldTick {
     private static boolean warned;
@@ -69,6 +71,7 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
         DiscJockey.TICK_LISTENERS.add(this);
     }
 
+    @SuppressWarnings("BusyWait")
     public synchronized void startPlaybackThread() {
         if(DiscJockey.config.disableAsyncPlayback) {
             playbackThread = null;
@@ -77,11 +80,11 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
 
         this.playbackThread = new Thread(() -> {
             Thread ownThread = this.playbackThread;
-            while(ownThread == this.playbackThread) {
+            while (ownThread == this.playbackThread) {
                 try {
                     // Accuracy doesn't really matter at this precision imo
                     Thread.sleep(playbackLoopDelay);
-                }catch (InterruptedException ignored) {}
+                } catch (InterruptedException ignored) {}
                 tickPlayback();
             }
         });
@@ -167,14 +170,14 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
                     index++;
                     continue;
                 }
-                if (!Util.canInteractWith(client.player, blockPos)) {
+                if (Util.canInteractWith(client.player, blockPos)) {
                     stop();
                     client.gui.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID+".player.too_far").withStyle(ChatFormatting.RED));
                     return;
                 }
                 Vec3 unit = Vec3.upFromBottomCenterOf(blockPos, 0.5).subtract(client.player.getEyePosition()).normalize();
                 if(rateLimiter.canSendLookPacket()) {
-                    client.getConnection().send(new ServerboundMovePlayerPacket.Rot(Mth.wrapDegrees((float) (Mth.atan2(unit.z, unit.x) * 57.2957763671875) - 90.0f), Mth.wrapDegrees((float) (-(Mth.atan2(unit.y, Math.sqrt(unit.x * unit.x + unit.z * unit.z)) * 57.2957763671875))), client.player.onGround(), client.player.horizontalCollision));
+                    Objects.requireNonNull(client.getConnection()).send(new ServerboundMovePlayerPacket.Rot(Mth.wrapDegrees((float) (Mth.atan2(unit.z, unit.x) * 57.2957763671875) - 90.0f), Mth.wrapDegrees((float) (-(Mth.atan2(unit.y, Math.sqrt(unit.x * unit.x + unit.z * unit.z)) * 57.2957763671875))), client.player.onGround(), client.player.horizontalCollision));
                     rateLimiter.onLookPacketSent();
                 }
                 if(rateLimiter.canSendAnyPacket()) {
@@ -212,9 +215,9 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
     }
 
     @Override
-    public void onStartTick(ClientLevel world) {
+    public void onStartTick(@NonNull ClientLevel world) {
         Minecraft client = Minecraft.getInstance();
-        if(world == null || client.level == null || client.player == null) return;
+        if(client.level == null || client.player == null) return;
         if(song == null || !running) return;
 
         tuner.cleanup(); // Housekeeping

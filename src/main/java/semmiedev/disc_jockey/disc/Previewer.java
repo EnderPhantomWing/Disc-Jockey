@@ -32,6 +32,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.NonNull;
 import semmiedev.disc_jockey.DiscJockey;
 
 import java.io.IOException;
@@ -63,7 +64,7 @@ public class Previewer implements ClientTickEvents.StartWorldTick {
     }
 
     @Override
-    public void onStartTick(ClientLevel world) {
+    public void onStartTick(@NonNull ClientLevel world) {
         while (running) {
             long note = song.notes[i];
             if ((short)note == Math.round(tick)) {

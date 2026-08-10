@@ -37,6 +37,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
+import org.jspecify.annotations.NonNull;
 import semmiedev.disc_jockey.*;
 import semmiedev.disc_jockey.config.Config;
 import semmiedev.disc_jockey.disc.Note;
@@ -74,9 +75,7 @@ public class DiscJockeyScreen extends Screen {
     private StringWidget songTitle;
     private StringWidget songState;
     private CycleButton<Boolean> playPauseButton;
-    private Button stopButton;
     private SongTimeSliderWidget timeBar;
-    private Button configButton;
 
     private SongListWidget songListWidget;
     private Button playButton, previewButton;
@@ -187,7 +186,7 @@ public class DiscJockeyScreen extends Screen {
         addRenderableWidget(songTitle);
         timeBar = new SongTimeSliderWidget(10, 32 + 20 + 20, width / 2 - 20, 30);
         addRenderableWidget(timeBar);
-        playPauseButton = CycleButton.<Boolean>builder((value) -> Component.literal(value ? "⏸" : "▶"), DiscJockey.SONG_PLAYER.running)
+        playPauseButton = CycleButton.builder((value) -> Component.literal(value ? "⏸" : "▶"), DiscJockey.SONG_PLAYER.running)
                 .displayOnlyValue()
                 .withValues(true, false)
                 .create((width / 4) - 25, 32 + 20 + 20 + 30 + 5, 20, 20, Component.empty(), (button, value) -> {
@@ -198,14 +197,14 @@ public class DiscJockeyScreen extends Screen {
             }
         });
         addRenderableWidget(playPauseButton);
-        stopButton = Button.builder(Component.literal("⏹"), button -> DiscJockey.SONG_PLAYER.stop())
+        Button stopButton = Button.builder(Component.literal("⏹"), button -> DiscJockey.SONG_PLAYER.stop())
                 .pos((width / 4) + 5, 32 + 20 + 20 + 30 + 5)
                 .size(20, 20)
                 .build();
         addRenderableWidget(stopButton);
 
         // Config button in bottom left
-        configButton = Button.builder(CONFIG, (button) -> minecraft.setScreen(AutoConfigClient.getConfigScreen(Config.class, this).get()))
+        Button configButton = Button.builder(CONFIG, (button) -> minecraft.setScreen(AutoConfigClient.getConfigScreen(Config.class, this).get()))
                 .pos(10, height - 30)
                 .size(100, 20)
                 .build();
@@ -233,13 +232,13 @@ public class DiscJockeyScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    public void renderBackground(@NonNull GuiGraphics context, int mouseX, int mouseY, float delta) {
         super.renderBackground(context, mouseX, mouseY, delta);
-        context.blit(RenderPipelines.GUI_TEXTURED, AbstractSelectionList.INWORLD_MENU_LIST_BACKGROUND, 5, 32, width / 2, 32 + 20 + 20 + 30 + 5 + 20 + 5, this.width / 2 - 10, 20 + 20 + 30 + 5 + 20 + 5, 32, 32);
+        context.blit(RenderPipelines.GUI_TEXTURED, AbstractSelectionList.INWORLD_MENU_LIST_BACKGROUND, 5, 32, (float) width / 2, 32 + 20 + 20 + 30 + 5 + 20 + 5, this.width / 2 - 10, 20 + 20 + 30 + 5 + 20 + 5, 32, 32);
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    public void render(@NonNull GuiGraphics context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
 
         context.drawCenteredString(font, DROP_HINT, width / 2, 5, 0xFFFFFF);

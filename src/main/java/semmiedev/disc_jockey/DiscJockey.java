@@ -57,6 +57,9 @@ import semmiedev.disc_jockey.gui.hud.BlocksOverlay;
 import semmiedev.disc_jockey.gui.screen.DiscJockeyScreen;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 public class DiscJockey implements ClientModInitializer {
@@ -77,7 +80,12 @@ public class DiscJockey implements ClientModInitializer {
         config = configHolder.getConfig();
 
         songsFolder = new File(FabricLoader.getInstance().getConfigDir()+File.separator+MOD_ID+File.separator+"songs");
-        if (!songsFolder.isDirectory()) songsFolder.mkdirs();
+        Path songsPath = songsFolder.toPath();
+        try {
+            Files.createDirectories(songsPath);
+        } catch (IOException e) {
+            LOGGER.error("Unable to create music directory: {}", songsPath, e);
+        }
 
         SongLoader.loadSongs();
 
@@ -116,9 +124,7 @@ public class DiscJockey implements ClientModInitializer {
             for (ClientTickEvents.StartWorldTick listener : TICK_LISTENERS) listener.onStartTick(world);
         });
 
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
-            DiscjockeyCommand.register(dispatcher);
-        });
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> DiscjockeyCommand.register(dispatcher));
 
         ClientLoginConnectionEvents.DISCONNECT.register((handler, client) -> {
             PREVIEWER.stop();
