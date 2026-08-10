@@ -1,6 +1,6 @@
 plugins {
-    id("maven-publish")
     id("mod-plugin")
+    id("maven-publish")
     id("net.fabricmc.fabric-loom-remap")
     id("com.github.hierynomus.license")
     id("com.replaymod.preprocess")

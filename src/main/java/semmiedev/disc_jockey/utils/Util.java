@@ -52,14 +52,22 @@ public class Util {
 
         final Vec3 eyePos = player.getEyePosition();
         if(DiscJockey.config.expectedServerVersion == Config.ExpectedServerVersion.v1_20_4_Or_Earlier) {
+            //#if MC < 26.2
             return !(eyePos.distanceToSqr(blockPos.getCenter()) <= 6.0 * 6.0);
+            //#else
+            //$$ return !(eyePos.distanceToSqr(Vec3.atCenterOf(blockPos)) <= 6.0 * 6.0);
+            //#endif
         }else if(DiscJockey.config.expectedServerVersion == Config.ExpectedServerVersion.v1_20_5_Or_Later) {
             double blockInteractRange = player.blockInteractionRange() + 1.0;
             return !(new AABB(blockPos).distanceToSqr(eyePos) < blockInteractRange * blockInteractRange);
         }else if(DiscJockey.config.expectedServerVersion == Config.ExpectedServerVersion.All) {
             // Require both checks to succeed (aka use worst distance)
             double blockInteractRange = player.blockInteractionRange() + 1.0;
+            //#if MC < 26.2
             return !(eyePos.distanceToSqr(blockPos.getCenter()) <= 6.0 * 6.0)
+            //#else
+            //$$ return !(eyePos.distanceToSqr(Vec3.atCenterOf(blockPos)) <= 6.0 * 6.0)
+            //#endif
                     || !(new AABB(blockPos).distanceToSqr(eyePos) < blockInteractRange * blockInteractRange);
         }else {
             throw new NotImplementedException("ExpectedServerVersion Value not implemented: " + DiscJockey.config.expectedServerVersion.name());

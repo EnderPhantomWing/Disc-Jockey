@@ -124,8 +124,10 @@ public class DiscJockey implements ClientModInitializer {
                     if (SongLoader.loadingSongs) {
                         //#if MC < 26.1
                         client.gui.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID+".still_loading").withStyle(ChatFormatting.RED));
-                        //#else
+                        //#elseif MC >= 26.1 && MC < 26.2
                         //$$ client.gui.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID+".still_loading").withStyle(ChatFormatting.RED), (MessageSignature) null, GuiMessageSource.PLAYER, GuiMessageTag.chatError());
+                        //#else
+                        //$$ client.gui.hud.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID+".still_loading").withStyle(ChatFormatting.RED), (MessageSignature) null, GuiMessageSource.PLAYER, GuiMessageTag.chatError());
                         //#endif
                         SongLoader.showToast = true;
                     } else {

@@ -72,7 +72,11 @@ public class SongLoader {
             for (Song song : SONGS) SONG_SUGGESTIONS.add(song.displayName);
             DiscJockey.config.favorites.removeIf(favorite -> SongLoader.SONGS.stream().map(song -> song.fileName).noneMatch(favorite::equals));
 
+            //#if MC < 26.2
             if (showToast) SystemToast.add(Minecraft.getInstance().getToastManager(), SystemToast.SystemToastId.PACK_LOAD_FAILURE, DiscJockey.NAME, Component.translatable(DiscJockey.MOD_ID+".loading_done"));
+            //#else
+            //$$ if (showToast) SystemToast.add(Minecraft.getInstance().gui.toastManager(), SystemToast.SystemToastId.PACK_LOAD_FAILURE, DiscJockey.NAME, Component.translatable(DiscJockey.MOD_ID+".loading_done"));
+            //#endif
             showToast = true;
             loadingSongs = false;
         }).start();

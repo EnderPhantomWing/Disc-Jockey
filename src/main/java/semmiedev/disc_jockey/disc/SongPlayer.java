@@ -108,8 +108,10 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
         if (!DiscJockey.config.hideWarning && !warned) {
             //#if MC < 26.1
             Minecraft.getInstance().gui.getChat().addMessage(Component.translatable("disc_jockey.warning").withStyle(ChatFormatting.BOLD, ChatFormatting.RED));
-            //#else
+            //#elseif MC >= 26.1 && MC < 26.2
             //$$ Minecraft.getInstance().gui.getChat().addMessage(Component.translatable("disc_jockey.warning").withStyle(ChatFormatting.BOLD, ChatFormatting.RED), (MessageSignature)null, GuiMessageSource.PLAYER, GuiMessageTag.chatError());
+            //#else
+            //$$ Minecraft.getInstance().gui.hud.getChat().addMessage(Component.translatable("disc_jockey.warning").withStyle(ChatFormatting.BOLD, ChatFormatting.RED), (MessageSignature)null, GuiMessageSource.PLAYER, GuiMessageTag.chatError());
             //#endif
             warned = true;
             return;
@@ -166,8 +168,10 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
             if (gameMode == null || !gameMode.isSurvival()) {
                 //#if MC < 26.1
                 client.gui.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID+".player.invalid_game_mode", gameMode == null ? "unknown" : gameMode.getLongDisplayName()).withStyle(ChatFormatting.RED));
-                //#else
+                //#elseif MC >= 26.1 && MC < 26.2
                 //$$ client.gui.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID+".player.invalid_game_mode", gameMode == null ? "unknown" : gameMode.getLongDisplayName()).withStyle(ChatFormatting.RED), (MessageSignature)null, GuiMessageSource.PLAYER, GuiMessageTag.chatError());
+                //#else
+                //$$ client.gui.hud.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID+".player.invalid_game_mode", gameMode == null ? "unknown" : gameMode.getLongDisplayName()).withStyle(ChatFormatting.RED), (MessageSignature)null, GuiMessageSource.PLAYER, GuiMessageTag.chatError());
                 //#endif
                 stop();
                 return;
@@ -191,8 +195,10 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
                     stop();
                     //#if MC < 26.1
                     client.gui.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID+".player.too_far").withStyle(ChatFormatting.RED));
-                    //#else
+                    //#elseif MC >= 26.1 && MC < 26.2
                     //$$ client.gui.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID+".player.too_far").withStyle(ChatFormatting.RED), (MessageSignature)null, GuiMessageSource.PLAYER, GuiMessageTag.chatError());
+                    //#else
+                    //$$ client.gui.hud.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID+".player.too_far").withStyle(ChatFormatting.RED), (MessageSignature)null, GuiMessageSource.PLAYER, GuiMessageTag.chatError());
                     //#endif
                     return;
                 }
@@ -247,7 +253,12 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
         if (!tuner.isSongSelected()) {
             if (!tuner.selectSong(client, song)) {
                 if(!tuner.getMissingInstrumentBlocks().isEmpty()) {
+                    //#if MC < 26.2
                     ChatComponent chatHud = Minecraft.getInstance().gui.getChat();
+                    //#else
+                    //$$ ChatComponent chatHud = Minecraft.getInstance().gui.hud.getChat();
+                    //#endif
+
                     //#if MC < 26.1
                     chatHud.addMessage(Component.translatable(DiscJockey.MOD_ID + ".player.invalid_note_blocks").withStyle(ChatFormatting.RED));
                     tuner.getMissingInstrumentBlocks().forEach((block, integer) -> chatHud.addMessage(Component.literal(block.getName().getString() + " × " + integer).withStyle(ChatFormatting.RED)));
@@ -261,8 +272,10 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
                     DiscJockey.LOGGER.error("Failed to select song to unknown / unexpected reason!");
                     //#if MC < 26.1
                     client.gui.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID + ".selectsong_fail_unknown").withStyle(ChatFormatting.RED));
-                    //#else
+                    //#elseif MC >= 26.1 && MC < 26.2
                     //$$ client.gui.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID + ".selectsong_fail_unknown").withStyle(ChatFormatting.RED), (MessageSignature)null, GuiMessageSource.PLAYER, GuiMessageTag.chatError());
+                    //#else
+                    //$$ client.gui.hud.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID + ".selectsong_fail_unknown").withStyle(ChatFormatting.RED), (MessageSignature)null, GuiMessageSource.PLAYER, GuiMessageTag.chatError());
                     //#endif
                     stop();
                     return;
@@ -279,8 +292,10 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
                 stop();
                 //#if MC < 26.1
                 client.gui.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID + ".player.too_far").withStyle(ChatFormatting.RED));
-                //#else
+                //#elseif MC >= 26.1 && MC < 26.2
                 //$$ client.gui.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID + ".player.too_far").withStyle(ChatFormatting.RED), (MessageSignature)null, GuiMessageSource.PLAYER, GuiMessageTag.chatError());
+                //#else
+                //$$ client.gui.hud.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID + ".player.too_far").withStyle(ChatFormatting.RED), (MessageSignature)null, GuiMessageSource.PLAYER, GuiMessageTag.chatError());
                 //#endif
                 return;
             } else if(tuningFail != null) {
@@ -288,8 +303,10 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
                 DiscJockey.LOGGER.error("Tuning song failed: " + tuningFail.name());
                 //#if MC < 26.1
                 client.gui.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID + ".player.tuning_fail_other", tuningFail.name()).withStyle(ChatFormatting.RED));
-                //#else
+                //#elseif MC >= 26.1 && MC < 26.2
                 //$$ client.gui.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID + ".player.tuning_fail_other", tuningFail.name()).withStyle(ChatFormatting.RED), (MessageSignature)null, GuiMessageSource.PLAYER, GuiMessageTag.chatError());
+                //#else
+                //$$ client.gui.hud.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID + ".player.tuning_fail_other", tuningFail.name()).withStyle(ChatFormatting.RED), (MessageSignature)null, GuiMessageSource.PLAYER, GuiMessageTag.chatError());
                 //#endif
                 return;
             }
