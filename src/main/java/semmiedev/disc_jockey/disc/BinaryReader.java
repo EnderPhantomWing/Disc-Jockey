@@ -88,7 +88,12 @@ public class BinaryReader {
 
     public byte[] readBytes(int length) throws IOException {
         byte[] bytes = new byte[length];
-        for (int i = 0; i < length; i++) bytes[i] = readByte();
+        int totalRead = 0;
+        while (totalRead < length) {
+            int read = in.read(bytes, totalRead, length - totalRead);
+            if (read == -1) throw new EOFException();
+            totalRead += read;
+        }
         return bytes;
     }
 }

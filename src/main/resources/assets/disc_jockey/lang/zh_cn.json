@@ -78,5 +78,8 @@
   "text.autoconfig.disc_jockey.option.instrumentDetectionWorkaround": "乐器检测变通方法",
   "text.autoconfig.disc_jockey.option.instrumentDetectionWorkaround.@Tooltip[0]": "在某些情况下，音符盒无法正确检测到它应该是什么乐器。",
   "text.autoconfig.disc_jockey.option.instrumentDetectionWorkaround.@Tooltip[1]": "这可能导致 Disc Jockey 错误地报告找不到某些乐器。然而，这可能会",
-  "text.autoconfig.disc_jockey.option.instrumentDetectionWorkaround.@Tooltip[2]": "破坏想要改变乐器的自定义方块插件（如 Nexo）。"
+  "text.autoconfig.disc_jockey.option.instrumentDetectionWorkaround.@Tooltip[2]": "破坏想要改变乐器的自定义方块插件（如 Nexo）。",
+  "text.autoconfig.disc_jockey.option.enableExperimentalMIDI": "启用实验性MIDI功能",
+  "text.autoconfig.disc_jockey.option.enableExperimentalMIDI.@Tooltip[0]": "启用或禁用所有MIDI相关功能，包括加载MIDI文件、可变速度支持和兼容MIDI GS/XG格式。",
+  "text.autoconfig.disc_jockey.option.enableExperimentalMIDI.@Tooltip[1]": "更改后需要手动重新加载歌曲才能生效。"
 }

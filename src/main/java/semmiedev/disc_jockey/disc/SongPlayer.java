@@ -45,6 +45,8 @@ import org.jetbrains.annotations.Nullable;
 import semmiedev.disc_jockey.DiscJockey;
 import semmiedev.disc_jockey.utils.Util;
 
+import java.io.IOException;
+
 public class SongPlayer implements ClientTickEvents.StartWorldTick {
     private static boolean warned;
     public boolean running;
@@ -100,6 +102,14 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
         tick = 0;
         index = 0;
         this.song = song;
+        // 确保歌曲的音符数据已加载
+        try {
+            SongLoader.ensureSongLoaded(song);
+        } catch (IOException e) {
+            DiscJockey.LOGGER.error("Failed to load song data for {}", song.fileName, e);
+            // 不开始播放
+            return;
+        }
         //Main.LOGGER.info("Song length: " + song.length + " and tempo " + song.tempo);
         if(this.playbackThread == null) startPlaybackThread();
         running = true;
@@ -145,7 +155,13 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
 
             long note = song.notes[index];
             if ((short)note <= Math.round(tick)) {
-                @Nullable BlockPos blockPos = tuner.getNoteBlocks().get(Note.INSTRUMENTS[(byte)(note >> Note.INSTRUMENT_SHIFT)]).get((byte)(note >> Note.NOTE_SHIFT));
+                var instrumentMap = tuner.getNoteBlocks().get(Note.INSTRUMENTS[(byte)(note >> Note.INSTRUMENT_SHIFT)]);
+                if (instrumentMap == null) {
+                    // Instrument got likely mapped to "nothing". Skip it
+                    index++;
+                    continue;
+                }
+                @Nullable BlockPos blockPos = instrumentMap.get((byte)(note >> Note.NOTE_SHIFT));
                 if(blockPos == null) {
                     // Instrument got likely mapped to "nothing". Skip it
                     index++;
@@ -158,7 +174,7 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
                 }
                 Vec3 unit = Vec3.upFromBottomCenterOf(blockPos, 0.5).subtract(client.player.getEyePosition()).normalize();
                 if(rateLimiter.canSendLookPacket()) {
-                    client.getConnection().send(new ServerboundMovePlayerPacket.Rot(Mth.wrapDegrees((float) (Mth.atan2(unit.z, unit.x) * 57.2957763671875) - 90.0f), Mth.wrapDegrees((float) (-(Mth.atan2(unit.y, Math.sqrt(unit.x * unit.x + unit.z * unit.z)) * 57.2957763671875))), client.player.onGround(), client.player.horizontalCollision));                        rateLimiter.onLookPacketSent();
+                    client.getConnection().send(new ServerboundMovePlayerPacket.Rot(Mth.wrapDegrees((float) (Mth.atan2(unit.z, unit.x) * 57.2957763671875) - 90.0f), Mth.wrapDegrees((float) (-(Mth.atan2(unit.y, Math.sqrt(unit.x * unit.x + unit.z * unit.z)) * 57.2957763671875))), client.player.onGround(), client.player.horizontalCollision));
                     rateLimiter.onLookPacketSent();
                 }
                 if(rateLimiter.canSendAnyPacket()) {

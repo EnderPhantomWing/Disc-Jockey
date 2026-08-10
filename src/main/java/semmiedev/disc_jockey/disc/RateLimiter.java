@@ -93,13 +93,13 @@ public class RateLimiter {
 
     public void checkLimits() {
         if(last100MsSpanEstimatedPackets >= getMaxCosmeticPacketsPer100ms()) {
-            reducePacketsUntil = Math.max(reducePacketsUntil, Util.now() + 500);
+            reducePacketsUntil = Math.max(reducePacketsUntil, Util.now() + 200);
         }
         if(last100MsSpanEstimatedPackets >= getMaxPacketsPer100ms()) {
             DiscJockey.LOGGER.warn("Stopping all packets for a bit!");
             final long now = Util.now();
-            stopPacketsUntil = Math.max(stopPacketsUntil, now + 250);
-            reducePacketsUntil = Math.max(reducePacketsUntil, now + 10000);
+            stopPacketsUntil = Math.max(stopPacketsUntil, now + 100);
+            reducePacketsUntil = Math.max(reducePacketsUntil, now + 1500);
         }
     }
 

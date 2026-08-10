@@ -46,6 +46,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.lwjgl.glfw.GLFW;
 import semmiedev.disc_jockey.command.DiscjockeyCommand;
 import semmiedev.disc_jockey.config.Config;
@@ -93,7 +94,7 @@ public class DiscJockey implements ClientModInitializer {
             private ClientLevel prevWorld;
 
             @Override
-            public void onStartTick(Minecraft client) {
+            public void onStartTick(@NonNull Minecraft client) {
                 if (prevWorld != client.level) {
                     PREVIEWER.stop();
                     SONG_PLAYER.stop();

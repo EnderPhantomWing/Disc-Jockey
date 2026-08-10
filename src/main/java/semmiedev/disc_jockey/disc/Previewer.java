@@ -34,6 +34,8 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.Vec3;
 import semmiedev.disc_jockey.DiscJockey;
 
+import java.io.IOException;
+
 public class Previewer implements ClientTickEvents.StartWorldTick {
     public boolean running;
 
@@ -42,6 +44,12 @@ public class Previewer implements ClientTickEvents.StartWorldTick {
     private Song song;
 
     public void start(Song song) {
+        try {
+            SongLoader.ensureSongLoaded(song);
+        } catch (IOException e) {
+            DiscJockey.LOGGER.error("Failed to load song data for preview {}", song.fileName, e);
+            return;
+        }
         this.song = song;
         DiscJockey.TICK_LISTENERS.add(this);
         running = true;

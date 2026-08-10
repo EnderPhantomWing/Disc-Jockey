@@ -30,6 +30,7 @@ package semmiedev.disc_jockey.disc;
 import semmiedev.disc_jockey.gui.SongListWidget;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Song {
     public final ArrayList<Note> uniqueNotes = new ArrayList<>();
@@ -42,8 +43,18 @@ public class Song {
     public int minutesSpent, leftClicks, rightClicks, blocksAdded, blocksRemoved;
     public String importFileName;
 
+    // MIDI-specific fields for variable tempo
+    public int midiPpq = 0; // pulses per quarter note, 0 for NBS songs
+    public List<TempoChange> tempoChanges = null; // null for NBS songs
+
     public SongListWidget.SongEntry entry;
     public String searchableFileName, searchableName;
+
+    /**
+     * @param MSpec microseconds per quarter note
+     */
+    public record TempoChange(long midiTick, long MSpec) {
+    }
 
     @Override
     public String toString() {
