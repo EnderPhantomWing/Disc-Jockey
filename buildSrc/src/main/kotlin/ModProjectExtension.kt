@@ -49,6 +49,7 @@ val Project.mixinJavaVersion get() = "JAVA_${javaVersion}"
 
 @Suppress("unused")
 val Project.fullProjectVersionName: String get() = "v$fullProjectVersion"
+val Project.fullProjectMavenVersion: String get() = getFullProjectMavenVersion(modVersion)
 val Project.fullProjectVersion: String get() = getFullProjectVersion(mcVersion, modVersion)
 
 private fun getCommitCountNumber(workDir: File = File(".")): Int? {
@@ -93,6 +94,11 @@ private fun getFullProjectVersion(mcVersion: String?, modVersion: String?): Stri
     val commitHash      = getCommitHash()
 
     return "${modVersion}.${commitCount}-mc${mcVersion}-${commitHash}-${buildType}"
+}
+
+private fun getFullProjectMavenVersion(modVersion: String?): String {
+    val commitCount     = getCommitCountNumber()
+    return "${modVersion}.${commitCount}"
 }
 
 val Project.placeholderProps: Map<String, Any?>

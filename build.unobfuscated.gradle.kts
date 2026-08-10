@@ -104,7 +104,7 @@ publishing {
         register("mavenJava", MavenPublication::class) {
             from(components["java"])
             artifactId = "${prop("minecraft_version")}"
-            version = modVersion
+            version = fullProjectMavenVersion
         }
     }
 
