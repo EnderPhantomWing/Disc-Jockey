@@ -35,11 +35,10 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientLoginConnectionEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.loader.api.FabricLoader;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.KeyMapping;
-import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Component;
@@ -55,6 +54,14 @@ import semmiedev.disc_jockey.disc.SongLoader;
 import semmiedev.disc_jockey.disc.SongPlayer;
 import semmiedev.disc_jockey.gui.hud.BlocksOverlay;
 import semmiedev.disc_jockey.gui.screen.DiscJockeyScreen;
+//#if MC < 26.1
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+//#else MC >= 26.1
+//$$ import net.minecraft.client.multiplayer.chat.GuiMessageSource;
+//$$ import net.minecraft.client.multiplayer.chat.GuiMessageTag;
+//$$ import net.minecraft.network.chat.MessageSignature;
+//$$ import io.netty.buffer.ByteBuf;
+//#endif
 
 import java.io.File;
 import java.io.IOException;
@@ -66,7 +73,11 @@ public class DiscJockey implements ClientModInitializer {
     public static final String MOD_ID = "disc_jockey";
     public static final MutableComponent NAME = Component.literal("Disc Jockey");
     public static final Logger LOGGER = LogManager.getLogger("Disc Jockey");
+    //#if MC < 26.1
     public static final ArrayList<ClientTickEvents.StartWorldTick> TICK_LISTENERS = new ArrayList<>();
+    //#else
+    //$$ public static final ArrayList<ClientTickEvents.StartLevelTick> TICK_LISTENERS = new ArrayList<>();
+    //#endif
     public static final Previewer PREVIEWER = new Previewer();
     public static final SongPlayer SONG_PLAYER = new SongPlayer();
 
@@ -111,7 +122,11 @@ public class DiscJockey implements ClientModInitializer {
 
                 if (openScreenKeyBind.consumeClick()) {
                     if (SongLoader.loadingSongs) {
+                        //#if MC < 26.1
                         client.gui.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID+".still_loading").withStyle(ChatFormatting.RED));
+                        //#else
+                        //$$ client.gui.getChat().addMessage(Component.translatable(DiscJockey.MOD_ID+".still_loading").withStyle(ChatFormatting.RED), (MessageSignature) null, GuiMessageSource.PLAYER, GuiMessageTag.chatError());
+                        //#endif
                         SongLoader.showToast = true;
                     } else {
                         client.setScreen(new DiscJockeyScreen());
@@ -121,7 +136,11 @@ public class DiscJockey implements ClientModInitializer {
         });
 
         ClientTickEvents.START_WORLD_TICK.register(world -> {
+            //#if MC < 26.1
             for (ClientTickEvents.StartWorldTick listener : TICK_LISTENERS) listener.onStartTick(world);
+            //#else
+            //$$ for (ClientTickEvents.StartLevelTick listener : TICK_LISTENERS) listener.onStartTick(world);
+            //#endif
         });
 
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> DiscjockeyCommand.register(dispatcher));
@@ -131,6 +150,8 @@ public class DiscJockey implements ClientModInitializer {
             SONG_PLAYER.stop();
         });
 
+        //#if MC < 26.1
         HudRenderCallback.EVENT.register(BlocksOverlay::render);
+        //#endif
     }
 }

@@ -37,7 +37,11 @@ import semmiedev.disc_jockey.DiscJockey;
 
 import java.io.IOException;
 
+//#if MC < 26.1
 public class Previewer implements ClientTickEvents.StartWorldTick {
+//#else
+//$$ public class Previewer implements ClientTickEvents.StartLevelTick {
+//#endif
     public boolean running;
 
     private int i;

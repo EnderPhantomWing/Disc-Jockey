@@ -232,14 +232,24 @@ public class DiscJockeyScreen extends Screen {
     }
 
     @Override
+    //#if MC < 26.1
     public void renderBackground(@NonNull GuiGraphics context, int mouseX, int mouseY, float delta) {
         super.renderBackground(context, mouseX, mouseY, delta);
+    //#else
+    //$$ public void extractBackground(@NonNull GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+    //$$     super.extractBackground(context, mouseX, mouseY, delta);
+    //#endif
         context.blit(RenderPipelines.GUI_TEXTURED, AbstractSelectionList.INWORLD_MENU_LIST_BACKGROUND, 5, 32, (float) width / 2, 32 + 20 + 20 + 30 + 5 + 20 + 5, this.width / 2 - 10, 20 + 20 + 30 + 5 + 20 + 5, 32, 32);
     }
 
     @Override
+    //#if MC < 26.1
     public void render(@NonNull GuiGraphics context, int mouseX, int mouseY, float delta) {
-        super.render(context, mouseX, mouseY, delta);
+        super.renderBackground(context, mouseX, mouseY, delta);
+    //#else
+    //$$ public void extractRenderState(@NonNull GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+    //$$     super.extractRenderState(context, mouseX, mouseY, delta);
+    //#endif
 
         context.drawCenteredString(font, DROP_HINT, width / 2, 5, 0xFFFFFF);
         context.drawCenteredString(font, SELECT_SONG, (width / 4 * 3), 20, 0xFFFFFF);

@@ -1,0 +1,16 @@
+net.fabricmc.fabric.api.client.command.v2.ClientCommandManager net.fabricmc.fabric.api.client.command.v2.ClientCommands
+
+net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper registerKeyBinding() registerKeyMapping()
+net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper registerKeyBinding() registerKeyMapping()
+net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
+
+net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents START_WORLD_TICK START_LEVEL_TICK
+
+net.minecraft.client.gui.GuiGraphics renderContent() extractContent()
+net.minecraft.client.gui.GuiGraphics renderItem() item()
+net.minecraft.client.gui.GuiGraphics renderBackground() extractBackground()
+net.minecraft.client.gui.GuiGraphics render() extractRenderState()
+net.minecraft.client.gui.GuiGraphics drawCenteredString() centeredText()
+net.minecraft.client.gui.GuiGraphics drawString() text()
+
+net.minecraft.client.gui.GuiGraphics net.minecraft.client.gui.GuiGraphicsExtractor

@@ -56,8 +56,15 @@ public record Note(NoteBlockInstrument instrument, byte note) {
             NoteBlockInstrument.DIDGERIDOO,
             NoteBlockInstrument.BIT,
             NoteBlockInstrument.BANJO,
+            //#if MC < 26.1
             NoteBlockInstrument.PLING
-
+            //#else
+            //$$ NoteBlockInstrument.PLING,
+            //$$ NoteBlockInstrument.TRUMPET,
+            //$$ NoteBlockInstrument.TRUMPET_EXPOSED,
+            //$$ NoteBlockInstrument.TRUMPET_WEATHERED,
+            //$$ NoteBlockInstrument.TRUMPET_OXIDIZED
+            //#endif
     };
 
     static {
@@ -77,5 +84,11 @@ public record Note(NoteBlockInstrument instrument, byte note) {
         INSTRUMENT_BLOCKS.put(NoteBlockInstrument.BIT, Blocks.EMERALD_BLOCK);
         INSTRUMENT_BLOCKS.put(NoteBlockInstrument.BANJO, Blocks.HAY_BLOCK);
         INSTRUMENT_BLOCKS.put(NoteBlockInstrument.PLING, Blocks.GLOWSTONE);
+        //#if MC >= 26.1
+        //$$ INSTRUMENT_BLOCKS.put(NoteBlockInstrument.TRUMPET, Blocks.COPPER_BLOCK);
+        //$$ INSTRUMENT_BLOCKS.put(NoteBlockInstrument.TRUMPET_EXPOSED, Blocks.EXPOSED_COPPER);
+        //$$ INSTRUMENT_BLOCKS.put(NoteBlockInstrument.TRUMPET_WEATHERED, Blocks.WEATHERED_COPPER);
+        //$$ INSTRUMENT_BLOCKS.put(NoteBlockInstrument.TRUMPET_OXIDIZED, Blocks.OXIDIZED_COPPER);
+        //#endif
     }
 }

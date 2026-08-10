@@ -32,7 +32,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.DeltaTracker;
+//#if MC < 26.1
 import net.minecraft.client.renderer.entity.ItemRenderer;
+//#endif
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.util.ARGB;
 
@@ -50,7 +52,9 @@ public class BlocksOverlay {
 
             Minecraft client = Minecraft.getInstance();
             Font textRenderer = client.font;
+            //#if MC < 26.1
             ItemRenderer itemRenderer = client.getItemRenderer();
+            //#endif
 
             //textRenderer.draw(matrices, " × "+amountOfNoteBlocks, 26, 13, 0xFFFFFF);
             context.drawString(textRenderer, " × "+amountOfNoteBlocks, 26, 13, 0xFFFFFF, true);

@@ -107,7 +107,11 @@ public class SongListWidget extends AbstractSelectionList<SongListWidget.SongEnt
         }
 
         @Override
+        //#if MC < 26.1
         public void renderContent(@NonNull GuiGraphics context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+        //#else
+        //$$ public void extractContent(@NonNull GuiGraphicsExtractor context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+        //#endif
             int x = this.getX();
             int y = this.getY();
             int entryWidth = this.getWidth();
