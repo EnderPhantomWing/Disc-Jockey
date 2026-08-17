@@ -88,6 +88,11 @@ public class DiscJockeyScreen extends Screen {
 
     @Override
     protected void init() {
+        int totalWidth = width / 2 - 10;
+        int gap = 10;
+        int buttonWidth = (totalWidth - 2 * gap) / 3;
+        int startX = width / 2;
+
         shouldFilter = true;
         songListWidget = new SongListWidget(minecraft, width / 2 - 10, height - 64 - 32, 32, 20);
         songListWidget.setX(width / 2);
@@ -108,7 +113,7 @@ public class DiscJockeyScreen extends Screen {
                     //client.setScreen(null);
                 }
             }
-        }).bounds((width / 4 * 3) - 160, height - 61, 100, 20).build();
+        }).bounds(startX, height - 61, buttonWidth, 20).build();
         addRenderableWidget(playButton);
 
         previewButton = Button.builder(PREVIEW, button -> {
@@ -118,7 +123,7 @@ public class DiscJockeyScreen extends Screen {
                 SongListWidget.SongEntry entry = songListWidget.getSelected();
                 if (entry != null) DiscJockey.PREVIEWER.start(entry.song);
             }
-        }).bounds((width / 4 * 3) - 50, height - 61, 100, 20).build();
+        }).bounds(startX + buttonWidth + gap, height - 61, buttonWidth, 20).build();
         addRenderableWidget(previewButton);
 
         addRenderableWidget(Button.builder(Component.translatable(DiscJockey.MOD_ID+".screen.blocks"), button -> {
@@ -164,7 +169,7 @@ public class DiscJockeyScreen extends Screen {
                 BlocksOverlay.itemStacks = null;
                 minecraft.setScreen(null);
             }
-        }).bounds((width / 4 * 3) + 60, height - 61, 100, 20).build());
+        }).bounds(startX + 2 * (buttonWidth + gap), height - 61, buttonWidth, 20).build());
 
         EditBox searchBar = new EditBox(font, (width / 4 * 3) - 75, height - 31, 150, 20, Component.empty());
         searchBar.setHint(Component.translatable(DiscJockey.MOD_ID+".screen.search").withStyle((style) -> style.withItalic(true).withColor(0xDDDDDD)));
@@ -245,7 +250,7 @@ public class DiscJockeyScreen extends Screen {
     @Override
     //#if MC < 26.1
     public void render(@NonNull GuiGraphics context, int mouseX, int mouseY, float delta) {
-        super.renderBackground(context, mouseX, mouseY, delta);
+        super.render(context, mouseX, mouseY, delta);
     //#else
     //$$ public void extractRenderState(@NonNull GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
     //$$     super.extractRenderState(context, mouseX, mouseY, delta);
