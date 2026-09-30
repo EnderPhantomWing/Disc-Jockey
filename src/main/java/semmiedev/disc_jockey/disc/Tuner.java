@@ -35,6 +35,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.NoteBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -410,7 +411,11 @@ public class Tuner {
         if (lastBlockPos != null) {
             // Turn head into spinning with time and lookup up further the further tuning is progressed
             //client.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(((float) (System.currentTimeMillis() % 2000)) * (360f/2000f), (1 - roughTuneProgress) * 180 - 90, true));
+            //#if MC < 26.3
             client.player.swing(InteractionHand.MAIN_HAND);
+            //#else
+            //$$ client.player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, true);
+            //#endif
         }
         return null;
     }

@@ -39,6 +39,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -217,7 +218,11 @@ public class SongPlayer implements ClientTickEvents.StartWorldTick {
                     rateLimiter.onPacketSent();
                 }
                 if(rateLimiter.canSendSwingPacket()) {
+                    //#if MC < 26.3
                     client.executeIfPossible(() -> client.player.swing(InteractionHand.MAIN_HAND));
+                    //#else
+                    //$$ client.executeIfPossible(() -> client.player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, true));
+                    //#endif
                     rateLimiter.onSwingPacketSent();
                 }
 

@@ -46,7 +46,11 @@ import net.minecraft.ChatFormatting;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
+//#if MC < 26.3
 import org.lwjgl.glfw.GLFW;
+//#else
+//$$ import org.lwjgl.sdl.SDLScancode;
+//#endif
 import semmiedev.disc_jockey.command.DiscjockeyCommand;
 import semmiedev.disc_jockey.config.Config;
 import semmiedev.disc_jockey.disc.Previewer;
@@ -104,8 +108,13 @@ public class DiscJockey implements ClientModInitializer {
         // 修复按键绑定
         KeyMapping openScreenKeyBind = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 MOD_ID + ".key_bind.open_screen",
+                //#if MC < 26.3
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_J,
+                //#else
+                //$$ InputConstants.Type.KEYBOARD,
+                //$$ SDLScancode.SDL_SCANCODE_J,
+                //#endif
                 KeyMapping.Category.MISC
         ));
 
